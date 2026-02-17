@@ -10,3 +10,4 @@ build/
 .idea/
 *.token
 .github-token
+create-issues.sh
