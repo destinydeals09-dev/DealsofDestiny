@@ -1,135 +1,73 @@
-// Amazon scraper
-import puppeteer from 'puppeteer';
+// Amazon scraper - improved with API approach
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 export async function scrapeAmazon() {
   const deals = [];
-  let browser;
 
   try {
     console.log('🛒 Scraping Amazon...');
     
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-blink-features=AutomationControlled'
-      ]
+    // Use Amazon's RSS feed for Gold Box deals (public, no auth needed)
+    const response = await axios.get('https://www.amazon.com/gp/goldbox/rss/feed', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/rss+xml, application/xml, text/xml'
+      },
+      timeout: 10000
     });
 
-    const page = await browser.newPage();
-    
-    // Mimic real browser to avoid detection
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-    await page.setExtraHTTPHeaders({
-      'Accept-Language': 'en-US,en;q=0.9',
-    });
-    
-    // Amazon Gold Box (Today's Deals)
-    await page.goto('https://www.amazon.com/gp/goldbox?ref_=nav_cs_gb', {
-      waitUntil: 'networkidle2',
-      timeout: 30000
-    });
+    const $ = cheerio.load(response.data, { xmlMode: true });
 
-    // Wait for deals to load
-    await page.waitForSelector('[data-testid="grid-deals-container"], .DealGridItem', { timeout: 10000 }).catch(() => {
-      console.log('Amazon: No deals container found, trying alternative...');
-    });
+    $('item').each((i, item) => {
+      try {
+        if (i >= 50) return false; // Limit to 50 deals
 
-    // Extract deals
-    const scrapedDeals = await page.evaluate(() => {
-      const items = [];
-      const dealCards = document.querySelectorAll('[data-testid="grid-deals-container"] > div, .DealGridItem, .DealCard');
+        const title = $(item).find('title').text().trim();
+        const link = $(item).find('link').text().trim();
+        const description = $(item).find('description').text();
 
-      dealCards.forEach((card) => {
-        try {
-          const linkEl = card.querySelector('a[href*="/dp/"], a[href*="/gp/"]');
-          const titleEl = card.querySelector('[data-testid="deal-title"], .DealTitle, .a-size-base-plus');
-          const priceEl = card.querySelector('[data-testid="deal-price"], .a-price-whole, .priceBlockDealPriceString');
-          const originalPriceEl = card.querySelector('[data-testid="list-price"], .a-text-price .a-offscreen');
-          const discountEl = card.querySelector('[data-testid="deal-badge-percentage"], .badge-percentage');
-          const imageEl = card.querySelector('img');
+        // Extract price from description
+        const priceMatch = description.match(/\$([0-9,.]+)/);
+        const wasMatch = description.match(/was \$([0-9,.]+)/i);
+        
+        if (!priceMatch) return;
 
-          if (!linkEl || !titleEl || !priceEl) return;
+        const salePrice = parseFloat(priceMatch[1].replace(/,/g, ''));
+        const originalPrice = wasMatch 
+          ? parseFloat(wasMatch[1].replace(/,/g, ''))
+          : salePrice * 1.2;
 
-          const title = titleEl.textContent.trim();
-          const salePriceText = priceEl.textContent.replace(/[^0-9.]/g, '');
-          const salePrice = parseFloat(salePriceText);
-          
-          let originalPrice = salePrice;
-          if (originalPriceEl) {
-            const origText = originalPriceEl.textContent.replace(/[^0-9.]/g, '');
-            originalPrice = parseFloat(origText) || salePrice;
-          }
+        const discount = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
 
-          let discount = 0;
-          if (discountEl) {
-            discount = parseInt(discountEl.textContent.replace(/[^0-9]/g, ''));
-          } else if (originalPrice > salePrice) {
-            discount = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
-          }
+        // Category detection
+        let category = 'Electronics';
+        const titleLC = title.toLowerCase();
+        if (titleLC.includes('laptop')) category = 'Laptops';
+        else if (titleLC.includes('headphone') || titleLC.includes('earbuds')) category = 'Audio';
+        else if (titleLC.includes('toy') || titleLC.includes('lego')) category = 'Toys';
+        else if (titleLC.includes('makeup') || titleLC.includes('beauty')) category = 'Beauty';
+        else if (titleLC.includes('tv')) category = 'TVs';
 
-          const url = linkEl.href.startsWith('http') 
-            ? linkEl.href.split('?')[0] // Remove tracking params
-            : `https://www.amazon.com${linkEl.getAttribute('href')}`.split('?')[0];
-          const image = imageEl ? imageEl.src : null;
-
-          // Category detection
-          let category = 'Electronics';
-          const titleLC = title.toLowerCase();
-          // Toys
-          if (titleLC.includes('lego') || titleLC.includes('toy') || titleLC.includes('doll') || titleLC.includes('action figure')) category = 'Toys';
-          else if (titleLC.includes('barbie') || titleLC.includes('hot wheels')) category = 'Toys';
-          // Beauty/Makeup
-          else if (titleLC.includes('makeup') || titleLC.includes('lipstick') || titleLC.includes('eyeshadow') || titleLC.includes('foundation')) category = 'Makeup';
-          else if (titleLC.includes('skincare') || titleLC.includes('moisturizer') || titleLC.includes('serum')) category = 'Skincare';
-          else if (titleLC.includes('perfume') || titleLC.includes('cologne') || titleLC.includes('fragrance')) category = 'Fragrance';
-          // Electronics
-          else if (titleLC.includes('laptop') || titleLC.includes('macbook')) category = 'Laptops';
-          else if (titleLC.includes('headphone') || titleLC.includes('earbuds') || titleLC.includes('airpods')) category = 'Audio';
-          else if (titleLC.includes('tablet') || titleLC.includes('ipad')) category = 'Tablets';
-          else if (titleLC.includes('watch') || titleLC.includes('smartwatch')) category = 'Wearables';
-          else if (titleLC.includes('keyboard') || titleLC.includes('mouse')) category = 'Peripherals';
-          else if (titleLC.includes('monitor') || titleLC.includes('display')) category = 'Monitors';
-          else if (titleLC.includes('tv') || titleLC.includes('television')) category = 'TVs';
-
-          items.push({
-            title,
-            originalPrice,
-            salePrice,
-            discount,
-            url,
-            image,
-            category
-          });
-        } catch (err) {
-          // Skip problematic items
-        }
-      });
-
-      return items;
-    });
-
-    scrapedDeals.forEach(deal => {
-      deals.push({
-        product_name: deal.title,
-        description: null,
-        category: deal.category,
-        original_price: deal.originalPrice,
-        sale_price: deal.salePrice,
-        discount_percent: deal.discount,
-        image_url: deal.image,
-        product_url: deal.url,
-        source: 'amazon'
-      });
+        deals.push({
+          product_name: title,
+          description: null,
+          category: category,
+          original_price: originalPrice,
+          sale_price: salePrice,
+          discount_percent: discount,
+          image_url: null,
+          product_url: link.split('?')[0], // Remove tracking
+          source: 'amazon'
+        });
+      } catch (err) {
+        // Skip invalid items
+      }
     });
 
     console.log(`✅ Amazon: Found ${deals.length} deals`);
   } catch (error) {
     console.error('❌ Amazon scraping failed:', error.message);
-    throw error;
-  } finally {
-    if (browser) await browser.close();
   }
 
   return deals;
