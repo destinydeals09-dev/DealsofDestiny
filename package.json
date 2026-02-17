@@ -1,0 +1,34 @@
+{
+  "name": "dealsofdestiny",
+  "version": "1.0.0",
+  "description": "Electronics & Gaming Deal Aggregator",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:db": "node database/test-connection.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/destinydeals09-dev/DealsofDestiny.git"
+  },
+  "keywords": [
+    "deals",
+    "aggregator",
+    "electronics",
+    "gaming"
+  ],
+  "author": "E & Dezi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/destinydeals09-dev/DealsofDestiny/issues"
+  },
+  "homepage": "https://github.com/destinydeals09-dev/DealsofDestiny#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.96.0",
+    "dotenv": "^17.3.1"
+  }
+}
