@@ -2,6 +2,12 @@
 import { scrapeBestBuy } from './bestbuy.js';
 import { scrapeNewegg } from './newegg.js';
 import { scrapeSteam } from './steam.js';
+import { scrapeAmazon } from './amazon.js';
+import { scrapeMicroCenter } from './microcenter.js';
+import { scrapeGameStop } from './gamestop.js';
+import { scrapeTarget } from './target.js';
+import { scrapeWalmart } from './walmart.js';
+import { scrapeBHPhoto } from './bhphoto.js';
 import { upsertDeal, logScraperRun, deactivateOldDeals } from '../database/client.js';
 
 async function runScraper(scraperFn, source) {
@@ -70,11 +76,17 @@ async function main() {
     console.error('Error deactivating old deals:', err.message);
   }
 
-  // Run all scrapers
+  // Run all scrapers in parallel
   const results = await Promise.allSettled([
     runScraper(scrapeBestBuy, 'bestbuy'),
     runScraper(scrapeNewegg, 'newegg'),
-    runScraper(scrapeSteam, 'steam')
+    runScraper(scrapeSteam, 'steam'),
+    runScraper(scrapeAmazon, 'amazon'),
+    runScraper(scrapeMicroCenter, 'microcenter'),
+    runScraper(scrapeGameStop, 'gamestop'),
+    runScraper(scrapeTarget, 'target'),
+    runScraper(scrapeWalmart, 'walmart'),
+    runScraper(scrapeBHPhoto, 'bhphoto')
   ]);
 
   // Summary

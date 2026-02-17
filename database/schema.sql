@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS deals (
   discount_percent INTEGER,
   image_url TEXT,
   product_url TEXT NOT NULL UNIQUE, -- Unique to prevent duplicates
-  source VARCHAR(20) NOT NULL CHECK (source IN ('bestbuy', 'newegg', 'steam')),
+  source VARCHAR(20) NOT NULL CHECK (source IN ('bestbuy', 'newegg', 'steam', 'amazon', 'microcenter', 'gamestop', 'target', 'walmart', 'bhphoto')),
   scraped_at TIMESTAMP DEFAULT NOW(),
   active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT NOW(),

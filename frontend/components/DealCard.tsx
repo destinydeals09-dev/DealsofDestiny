@@ -8,13 +8,25 @@ interface DealCardProps {
 const sourceColors = {
   bestbuy: 'from-blue-500 to-blue-700',
   newegg: 'from-orange-500 to-red-600',
-  steam: 'from-purple-500 to-indigo-600'
+  steam: 'from-purple-500 to-indigo-600',
+  amazon: 'from-yellow-500 to-orange-600',
+  microcenter: 'from-red-500 to-pink-600',
+  gamestop: 'from-red-600 to-gray-800',
+  target: 'from-red-500 to-red-700',
+  walmart: 'from-blue-400 to-yellow-500',
+  bhphoto: 'from-green-500 to-teal-600'
 };
 
 const sourceLogos = {
   bestbuy: '🛒',
   newegg: '🖥️',
-  steam: '🎮'
+  steam: '🎮',
+  amazon: '📦',
+  microcenter: '💻',
+  gamestop: '🎮',
+  target: '🎯',
+  walmart: '🛒',
+  bhphoto: '📷'
 };
 
 export default function DealCard({ deal }: DealCardProps) {
