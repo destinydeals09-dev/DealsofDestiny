@@ -8,6 +8,9 @@ import { scrapeGameStop } from './gamestop.js';
 import { scrapeTarget } from './target.js';
 import { scrapeWalmart } from './walmart.js';
 import { scrapeBHPhoto } from './bhphoto.js';
+import { scrapeSephora } from './sephora.js';
+import { scrapeUlta } from './ulta.js';
+import { scrapeToysRUs } from './toysrus.js';
 import { upsertDeal, logScraperRun, deactivateOldDeals } from '../database/client.js';
 
 async function runScraper(scraperFn, source) {
@@ -86,7 +89,10 @@ async function main() {
     runScraper(scrapeGameStop, 'gamestop'),
     runScraper(scrapeTarget, 'target'),
     runScraper(scrapeWalmart, 'walmart'),
-    runScraper(scrapeBHPhoto, 'bhphoto')
+    runScraper(scrapeBHPhoto, 'bhphoto'),
+    runScraper(scrapeSephora, 'sephora'),
+    runScraper(scrapeUlta, 'ulta'),
+    runScraper(scrapeToysRUs, 'toysrus')
   ]);
 
   // Summary

@@ -52,7 +52,14 @@ export async function scrapeWalmart() {
 
           let category = 'Electronics';
           const nameLC = name.toLowerCase();
-          if (nameLC.includes('laptop')) category = 'Laptops';
+          // Toys
+          if (nameLC.includes('toy') || nameLC.includes('lego') || nameLC.includes('doll')) category = 'Toys';
+          else if (nameLC.includes('barbie') || nameLC.includes('hot wheels')) category = 'Toys';
+          // Beauty
+          else if (nameLC.includes('makeup') || nameLC.includes('lipstick') || nameLC.includes('cosmetic')) category = 'Makeup';
+          else if (nameLC.includes('skincare') || nameLC.includes('beauty')) category = 'Beauty';
+          // Electronics
+          else if (nameLC.includes('laptop')) category = 'Laptops';
           else if (nameLC.includes('tv')) category = 'TVs';
           else if (nameLC.includes('tablet')) category = 'Tablets';
           else if (nameLC.includes('headphone') || nameLC.includes('earbuds')) category = 'Audio';

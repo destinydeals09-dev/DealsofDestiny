@@ -15,7 +15,7 @@ export interface Deal {
   discount_percent: number | null;
   image_url: string | null;
   product_url: string;
-  source: 'bestbuy' | 'newegg' | 'steam' | 'amazon' | 'microcenter' | 'gamestop' | 'target' | 'walmart' | 'bhphoto';
+  source: 'bestbuy' | 'newegg' | 'steam' | 'amazon' | 'microcenter' | 'gamestop' | 'target' | 'walmart' | 'bhphoto' | 'sephora' | 'ulta' | 'toysrus';
   scraped_at: string;
   active: boolean;
   created_at: string;

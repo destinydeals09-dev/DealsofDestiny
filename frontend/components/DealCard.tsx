@@ -14,7 +14,10 @@ const sourceColors = {
   gamestop: 'from-red-600 to-gray-800',
   target: 'from-red-500 to-red-700',
   walmart: 'from-blue-400 to-yellow-500',
-  bhphoto: 'from-green-500 to-teal-600'
+  bhphoto: 'from-green-500 to-teal-600',
+  sephora: 'from-black to-gray-800',
+  ulta: 'from-pink-500 to-rose-600',
+  toysrus: 'from-blue-500 to-cyan-500'
 };
 
 const sourceLogos = {
@@ -26,7 +29,10 @@ const sourceLogos = {
   gamestop: '🎮',
   target: '🎯',
   walmart: '🛒',
-  bhphoto: '📷'
+  bhphoto: '📷',
+  sephora: '💄',
+  ulta: '💅',
+  toysrus: '🧸'
 };
 
 export default function DealCard({ deal }: DealCardProps) {

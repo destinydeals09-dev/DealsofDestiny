@@ -52,7 +52,14 @@ export async function scrapeTarget() {
 
           let category = 'Electronics';
           const nameLC = name.toLowerCase();
-          if (nameLC.includes('laptop')) category = 'Laptops';
+          // Toys
+          if (nameLC.includes('toy') || nameLC.includes('lego') || nameLC.includes('doll') || nameLC.includes('action figure')) category = 'Toys';
+          else if (nameLC.includes('barbie') || nameLC.includes('hot wheels') || nameLC.includes('nerf')) category = 'Toys';
+          // Beauty
+          else if (nameLC.includes('makeup') || nameLC.includes('lipstick') || nameLC.includes('mascara')) category = 'Makeup';
+          else if (nameLC.includes('skincare') || nameLC.includes('lotion')) category = 'Skincare';
+          // Electronics
+          else if (nameLC.includes('laptop')) category = 'Laptops';
           else if (nameLC.includes('headphone') || nameLC.includes('earbuds')) category = 'Audio';
           else if (nameLC.includes('tablet') || nameLC.includes('ipad')) category = 'Tablets';
           else if (nameLC.includes('tv')) category = 'TVs';

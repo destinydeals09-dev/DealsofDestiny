@@ -77,7 +77,15 @@ export async function scrapeAmazon() {
           // Category detection
           let category = 'Electronics';
           const titleLC = title.toLowerCase();
-          if (titleLC.includes('laptop') || titleLC.includes('macbook')) category = 'Laptops';
+          // Toys
+          if (titleLC.includes('lego') || titleLC.includes('toy') || titleLC.includes('doll') || titleLC.includes('action figure')) category = 'Toys';
+          else if (titleLC.includes('barbie') || titleLC.includes('hot wheels')) category = 'Toys';
+          // Beauty/Makeup
+          else if (titleLC.includes('makeup') || titleLC.includes('lipstick') || titleLC.includes('eyeshadow') || titleLC.includes('foundation')) category = 'Makeup';
+          else if (titleLC.includes('skincare') || titleLC.includes('moisturizer') || titleLC.includes('serum')) category = 'Skincare';
+          else if (titleLC.includes('perfume') || titleLC.includes('cologne') || titleLC.includes('fragrance')) category = 'Fragrance';
+          // Electronics
+          else if (titleLC.includes('laptop') || titleLC.includes('macbook')) category = 'Laptops';
           else if (titleLC.includes('headphone') || titleLC.includes('earbuds') || titleLC.includes('airpods')) category = 'Audio';
           else if (titleLC.includes('tablet') || titleLC.includes('ipad')) category = 'Tablets';
           else if (titleLC.includes('watch') || titleLC.includes('smartwatch')) category = 'Wearables';
