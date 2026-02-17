@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:db": "node database/test-connection.js"
+    "test:db": "node database/test-connection.js",
+    "scrape": "node scraper/index.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,9 @@
   "homepage": "https://github.com/destinydeals09-dev/DealsofDestiny#readme",
   "dependencies": {
     "@supabase/supabase-js": "^2.96.0",
-    "dotenv": "^17.3.1"
+    "axios": "^1.13.5",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.3.1",
+    "puppeteer": "^24.37.3"
   }
 }
