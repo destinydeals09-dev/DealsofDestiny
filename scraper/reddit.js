@@ -109,9 +109,27 @@ async function scrapeRedditSubreddit(subreddit) {
       if (data.stickied) continue;
       
       const title = data.title || '';
-      const url = data.url || '';
+      let dealUrl = data.url || '';
       const postUrl = `https://www.reddit.com${data.permalink}`;
       const flairText = data.link_flair_text || '';
+      const selftext = data.selftext || '';
+      
+      // If URL points to Reddit (text post), extract URL from selftext
+      if (dealUrl.includes('reddit.com') || dealUrl.includes('redd.it')) {
+        // Try to extract URL from selftext
+        const urlMatch = selftext.match(/https?:\/\/[^\s\)]+/i);
+        if (urlMatch) {
+          dealUrl = urlMatch[0];
+        } else {
+          // Skip if we can't find a deal URL
+          continue;
+        }
+      }
+      
+      // Skip if still no valid external URL
+      if (!dealUrl || dealUrl.includes('reddit.com') || dealUrl.includes('redd.it')) {
+        continue;
+      }
       
       // Extract discount percentage
       const discountPct = extractDiscountPercent(title);
@@ -143,10 +161,10 @@ async function scrapeRedditSubreddit(subreddit) {
         product_name: title.trim(),
         price: price || 0,
         discount_pct: discountPct,
-        product_url: url,
+        product_url: dealUrl, // Direct link to purchase site
         image_url: imageUrl,
         source: `reddit_${subreddit}`,
-        source_url: postUrl,
+        source_url: postUrl, // Reddit discussion link
         category: category,
         expires_at: null, // Reddit posts don't have expiration
         quality_score: qualityScore,
