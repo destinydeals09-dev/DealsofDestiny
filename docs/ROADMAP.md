@@ -21,26 +21,34 @@ _(Nothing blocked right now)_
 ### 🟡 TODO (Prioritized)
 
 #### P0: Critical Path (MVP Week 1)
-- [ ] **Slickdeals RSS Scraper**
+- [x] **Slickdeals RSS Scraper** ✅ DONE (2026-02-18)
   - Parse Slickdeals frontpage RSS
   - Extract: title, price, discount %, URL, image
   - Filter: >= 50% only
   - **Owner:** Dezi
-  - **Estimate:** 4 hours
+  - **Time:** 2 hours
 
-- [ ] **Reddit r/buildapcsales Scraper**
+- [x] **Reddit r/buildapcsales + GameDeals Scraper** ✅ DONE (2026-02-18)
   - Use Reddit JSON API
   - Parse discount % from title (e.g., "[50% off]")
-  - Store in database
+  - Built for both subreddits
+  - Quality scoring based on upvotes/comments
   - **Owner:** Dezi
-  - **Estimate:** 3 hours
+  - **Time:** 3 hours
 
-- [ ] **Database Schema Update**
-  - Add `discount_pct` column (integer)
-  - Add `quality_score` column (integer)
-  - Add `expires_at` timestamp
+- [x] **Database Schema Update (v3)** ✅ DONE (2026-02-18)
+  - Added `quality_score` column
+  - Added `expires_at` timestamp
+  - Added `source_url` column
+  - Updated database client for v2.0 compatibility
+  - Created deep_discount_deals view (50%+ only)
   - **Owner:** Dezi
-  - **Estimate:** 1 hour
+  - **Time:** 1 hour
+
+- [ ] **Run Schema Update in Supabase** 🔴 BLOCKED
+  - Need to apply update-schema-v3.sql
+  - **Owner:** E
+  - **Estimate:** 5 minutes
 
 - [ ] **Frontend: Deal Listing with 50% Filter**
   - Update Next.js homepage
@@ -80,19 +88,44 @@ _(Nothing blocked right now)_
 
 ### 🟢 IN PROGRESS
 
-- **None** (starting fresh with new strategy)
+- **Slickdeals RSS Scraper** (Testing - works but needs more real-world data)
+  - Built and tested
+  - Extracts discounts from RSS
+  - Filters for 50%+ only
+  - **Status:** Ready for database integration
+
+- **Reddit Scrapers** (Testing - works great!)
+  - Built r/buildapcsales + r/GameDeals
+  - Found 34 deals with 50%+ discount in test run
+  - Quality scoring based on upvotes
+  - **Status:** Ready for database integration
 
 ---
 
 ### ✅ DONE
 
+#### Infrastructure & Planning
 - [x] **Steam API Scraper** _(Already working)_
 - [x] **Project Architecture** _(ARCHITECTURE.md)_
 - [x] **Scraping Reality Check** _(SCRAPING_REALITY.md)_
-- [x] **New Strategy Document** _(STRATEGY.md)_
-- [x] **Roadmap & Kanban Board** _(This file)_
-- [x] **Mac Mini Always-On Setup** _(Caffeinate enabled)_
-- [x] **WhatsApp Connection Fixed** _(Re-linked, stable)_
+- [x] **New Strategy Document** _(STRATEGY.md)_ - 2026-02-18
+- [x] **Roadmap & Kanban Board** _(This file)_ - 2026-02-18
+- [x] **Mac Mini Always-On Setup** _(Caffeinate enabled)_ - 2026-02-18
+- [x] **WhatsApp Connection Fixed** _(Re-linked, stable)_ - 2026-02-18
+- [x] **Security Posture Added to SOUL.md** - 2026-02-18
+- [x] **PROJECT_STATUS.md** _(Autonomy guidelines)_ - 2026-02-18
+
+#### v2.0 Scrapers (2026-02-18)
+- [x] **Slickdeals RSS Scraper** - Discount extraction + 50% filter
+- [x] **Reddit Scraper** - buildapcsales + GameDeals with quality scoring
+- [x] **Database Schema v3** - quality_score, expires_at, source_url
+- [x] **Database Client Update** - v1/v2 format compatibility
+- [x] **Main Scraper Updated** - Integrated new sources, disabled retail scrapers
+- [x] **Git Commit** - All v2.0 code committed
+
+#### Automation Scripts Ready
+- [x] **Daily Status Cron Script** - setup-daily-status.sh
+- [x] **Scraper Cron Script** - setup-scraper-cron.sh
 
 ---
 
@@ -103,9 +136,11 @@ _(Nothing blocked right now)_
 
 | Day | Tasks | Owner | Status |
 |-----|-------|-------|--------|
-| **Wed 2/18** | Slickdeals scraper | Dezi | 🔴 TODO |
-| | Reddit buildapcsales scraper | Dezi | 🔴 TODO |
-| | Database schema update | Dezi | 🔴 TODO |
+| **Wed 2/18** | Slickdeals scraper | Dezi | ✅ DONE |
+| | Reddit buildapcsales + GameDeals scraper | Dezi | ✅ DONE |
+| | Database schema update (v3) | Dezi | ✅ DONE |
+| | Apply schema to Supabase | E | 🔴 TODO |
+| | Test full scraper run | Dezi | ⏸️ BLOCKED (needs schema) |
 | **Thu 2/19** | Frontend 50% filter | E/Dezi | 🔴 TODO |
 | | OpenClaw cron setup | Dezi | 🔴 TODO |
 | **Fri 2/20** | Testing & debugging | E + Dezi | 🔴 TODO |
