@@ -11,6 +11,9 @@ import { scrapeBHPhoto } from './bhphoto.js';
 import { scrapeSephora } from './sephora.js';
 import { scrapeUlta } from './ulta.js';
 import { scrapeToysRUs } from './toysrus.js';
+// New v2.0 scrapers (deal aggregation)
+import { scrapeSlickdeals } from './slickdeals.js';
+import { scrapeReddit } from './reddit.js';
 import { upsertDeal, logScraperRun, deactivateOldDeals } from '../database/client.js';
 
 async function runScraper(scraperFn, source) {
@@ -81,18 +84,23 @@ async function main() {
 
   // Run all scrapers in parallel
   const results = await Promise.allSettled([
-    runScraper(scrapeBestBuy, 'bestbuy'),
-    runScraper(scrapeNewegg, 'newegg'),
+    // v2.0 Deal Aggregators (Priority - these work!)
+    runScraper(scrapeSlickdeals, 'slickdeals'),
+    runScraper(scrapeReddit, 'reddit'),
     runScraper(scrapeSteam, 'steam'),
-    runScraper(scrapeAmazon, 'amazon'),
-    runScraper(scrapeMicroCenter, 'microcenter'),
-    runScraper(scrapeGameStop, 'gamestop'),
-    runScraper(scrapeTarget, 'target'),
-    runScraper(scrapeWalmart, 'walmart'),
-    runScraper(scrapeBHPhoto, 'bhphoto'),
-    runScraper(scrapeSephora, 'sephora'),
-    runScraper(scrapeUlta, 'ulta'),
-    runScraper(scrapeToysRUs, 'toysrus')
+    
+    // v1.0 Retail scrapers (archived - anti-bot issues)
+    // runScraper(scrapeBestBuy, 'bestbuy'),
+    // runScraper(scrapeNewegg, 'newegg'),
+    // runScraper(scrapeAmazon, 'amazon'),
+    // runScraper(scrapeMicroCenter, 'microcenter'),
+    // runScraper(scrapeGameStop, 'gamestop'),
+    // runScraper(scrapeTarget, 'target'),
+    // runScraper(scrapeWalmart, 'walmart'),
+    // runScraper(scrapeBHPhoto, 'bhphoto'),
+    // runScraper(scrapeSephora, 'sephora'),
+    // runScraper(scrapeUlta, 'ulta'),
+    // runScraper(scrapeToysRUs, 'toysrus')
   ]);
 
   // Summary

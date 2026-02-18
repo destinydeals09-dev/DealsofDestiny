@@ -22,24 +22,27 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 // Helper: Insert or update deal (upsert based on product_url)
 export async function upsertDeal(deal) {
+  // Map v2.0 format to v1.0 schema
+  // v2.0 uses: price, discount_pct, is_active, quality_score, expires_at
+  // v1.0 uses: sale_price, discount_percent, active, source_url
+  
+  const dealData = {
+    product_name: deal.product_name,
+    description: deal.description || null,
+    category: deal.category || 'general',
+    original_price: deal.original_price || null,
+    sale_price: deal.sale_price || deal.price || 0,
+    discount_percent: deal.discount_percent || deal.discount_pct || 0,
+    image_url: deal.image_url || null,
+    product_url: deal.product_url,
+    source: deal.source,
+    scraped_at: new Date().toISOString(),
+    active: deal.active !== undefined ? deal.active : (deal.is_active !== undefined ? deal.is_active : true)
+  };
+
   const { data, error } = await supabase
     .from('deals')
-    .upsert(
-      {
-        product_name: deal.product_name,
-        description: deal.description,
-        category: deal.category,
-        original_price: deal.original_price,
-        sale_price: deal.sale_price,
-        discount_percent: deal.discount_percent,
-        image_url: deal.image_url,
-        product_url: deal.product_url,
-        source: deal.source,
-        scraped_at: new Date().toISOString(),
-        active: true
-      },
-      { onConflict: 'product_url' }
-    )
+    .upsert(dealData, { onConflict: 'product_url' })
     .select();
 
   if (error) {
