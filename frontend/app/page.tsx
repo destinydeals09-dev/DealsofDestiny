@@ -102,13 +102,21 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
       <header className="bg-black/30 backdrop-blur-sm border-b border-purple-500/20">
-        <div className="container mx-auto px-4 py-6 text-center">
-          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-            ⚡ Grabbit
-          </h1>
-          <p className="text-gray-300 mt-2 text-lg">
-            Grab it before it's gone! Only 50%+ OFF deals • Updated every 6 hours
-          </p>
+        <div className="container mx-auto px-4 py-6 text-center relative">
+          {/* Lightning bolt background */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+            <span className="text-[200px] leading-none">⚡</span>
+          </div>
+          
+          {/* Content */}
+          <div className="relative z-10">
+            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+              ⚡ Grabbit
+            </h1>
+            <p className="text-gray-300 mt-2 text-lg">
+              Grab it before it's gone! Only 50%+ OFF deals • Updated every 6 hours
+            </p>
+          </div>
         </div>
       </header>
 

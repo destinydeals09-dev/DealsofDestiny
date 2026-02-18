@@ -49,6 +49,46 @@ const getSourceDisplay = (source: string) => {
   return source;
 };
 
+// Helper to get category icon for placeholder
+const getCategoryIcon = (deal: Deal) => {
+  const source = deal.source.toLowerCase();
+  const name = deal.product_name.toLowerCase();
+  const category = deal.category?.toLowerCase() || '';
+  
+  // Gaming
+  if (source.includes('game') || source.includes('steam') || 
+      name.includes('game') || category.includes('game')) {
+    return '🎮';
+  }
+  
+  // Fashion
+  if (source.includes('fashion') || source.includes('sneaker') ||
+      name.includes('shirt') || name.includes('jacket') || name.includes('shoe')) {
+    return '👗';
+  }
+  
+  // Beauty
+  if (source.includes('mua') || source.includes('beauty') || source.includes('sephora') ||
+      name.includes('makeup') || name.includes('beauty')) {
+    return '💄';
+  }
+  
+  // Tech
+  if (source.includes('buildapcsales') || name.includes('pc') || 
+      name.includes('monitor') || name.includes('keyboard') || category.includes('tech')) {
+    return '💻';
+  }
+  
+  // Toys
+  if (source.includes('lego') || source.includes('toy') || 
+      name.includes('lego') || name.includes('toy')) {
+    return '🧸';
+  }
+  
+  // Default
+  return '🔥';
+};
+
 export default function DealCard({ deal }: DealCardProps) {
   const savings = deal.original_price
     ? (deal.original_price - deal.sale_price).toFixed(2)
@@ -72,7 +112,9 @@ export default function DealCard({ deal }: DealCardProps) {
             unoptimized
           />
         ) : (
-          <span className="text-6xl">{sourceLogos[deal.source]}</span>
+          <div className="text-9xl opacity-30 group-hover:scale-110 transition-transform duration-300">
+            {getCategoryIcon(deal)}
+          </div>
         )}
 
         {/* Discount Badge */}
