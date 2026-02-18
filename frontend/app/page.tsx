@@ -19,8 +19,10 @@ export default function Home() {
         .limit(200);
 
       if (!error && data) {
-        setAllDeals(data);
-        setFilteredDeals(data);
+        // Auto-sort by discount % (high to low)
+        const sorted = [...data].sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
+        setAllDeals(sorted);
+        setFilteredDeals(sorted);
       }
       setLoading(false);
     }
