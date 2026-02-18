@@ -45,7 +45,7 @@ export default async function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold text-pink-400">
-                {deals.length > 0 ? Math.max(...deals.map(d => d.discount_percent || 0)) : 0}%
+                {deals.length > 0 ? Math.max(...deals.map(d => d.discount_percent ?? 0)) : 0}%
               </p>
               <p className="text-gray-400 text-sm">Best Discount</p>
             </div>
@@ -57,7 +57,7 @@ export default async function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold text-green-400">
-                {deals.filter(d => d.discount_percent >= 75).length}
+                {deals.filter(d => d.discount_percent && d.discount_percent >= 75).length}
               </p>
               <p className="text-gray-400 text-sm">75%+ OFF</p>
             </div>
