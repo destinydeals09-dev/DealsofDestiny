@@ -15,7 +15,10 @@ export interface Deal {
   discount_percent: number | null;
   image_url: string | null;
   product_url: string;
-  source: 'bestbuy' | 'newegg' | 'steam' | 'amazon' | 'microcenter' | 'gamestop' | 'target' | 'walmart' | 'bhphoto' | 'sephora' | 'ulta' | 'toysrus';
+  source: string; // Allow any source (reddit_*, steam, etc.)
+  source_url: string | null;
+  quality_score: number | null;
+  expires_at: string | null;
   scraped_at: string;
   active: boolean;
   created_at: string;
