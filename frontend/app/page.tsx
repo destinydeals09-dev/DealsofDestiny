@@ -19,13 +19,35 @@ export default function Home() {
         .limit(200);
 
       if (!error && data) {
-        // Filter out expired deals AND cheap items
+        // Filter out expired deals, cheap items, AND location-specific deals
         const qualityDeals = data.filter(deal => {
           // Check if expired
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
                            deal.product_name?.toLowerCase().includes('expired') ||
                            (deal.expires_at && new Date(deal.expires_at) < new Date());
           if (isExpired) return false;
+          
+          // Check if location-specific or in-store only
+          const text = `${deal.product_name} ${deal.category || ''}`.toLowerCase();
+          const locationKeywords = [
+            // US States
+            'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut',
+            'delaware', 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa',
+            'kansas', 'kentucky', 'louisiana', 'maine', 'maryland', 'massachusetts', 'michigan',
+            'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska', 'nevada', 'new hampshire',
+            'new jersey', 'new mexico', 'new york', 'north carolina', 'north dakota', 'ohio',
+            'oklahoma', 'oregon', 'pennsylvania', 'rhode island', 'south carolina', 'south dakota',
+            'tennessee', 'texas', 'utah', 'vermont', 'virginia', 'washington', 'west virginia',
+            'wisconsin', 'wyoming',
+            // Cities (major ones)
+            'atlanta', 'boston', 'chicago', 'dallas', 'denver', 'houston', 'los angeles', 'miami',
+            'new york city', 'nyc', 'philadelphia', 'phoenix', 'san francisco', 'seattle',
+            // Location indicators
+            'in-store', 'in store', 'local', 'ymmv', 'costco ', 'walmart ', 'target '
+          ];
+          
+          const isLocationSpecific = locationKeywords.some(keyword => text.includes(keyword));
+          if (isLocationSpecific) return false;
           
           // Calculate original price if missing
           let originalPrice = deal.original_price;
@@ -134,7 +156,7 @@ export default function Home() {
               Grabbit
             </h1>
             <p className="text-gray-300 mt-2 text-lg">
-              Grab it before it's gone! Only 50%+ OFF on $50+ items • Updated every 6 hours
+              50%+ OFF on $50+ items • Nationwide online deals only • Updated every 6 hours
             </p>
           </div>
         </div>
@@ -175,10 +197,10 @@ export default function Home() {
       <footer className="bg-black/30 backdrop-blur-sm border-t border-purple-500/20 mt-20">
         <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
           <p className="text-lg font-semibold text-purple-400">⚡ grabbit.gg</p>
-          <p className="mt-2">Grab it before it's gone! Updated every 6 hours</p>
+          <p className="mt-2">Nationwide online deals • Updated every 6 hours</p>
           <p className="mt-2">Gaming • Fashion • Beauty • Tech • Toys</p>
           <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF on $50+ items 🔥</p>
-          <p className="mt-1 text-xs text-gray-500">Quality deals on expensive items only</p>
+          <p className="mt-1 text-xs text-gray-500">Quality deals • No local/in-store only</p>
           <p className="mt-3 text-xs">Built by E & Dezi 📊</p>
         </div>
       </footer>
