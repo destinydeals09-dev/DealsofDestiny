@@ -101,8 +101,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
-      <header className="bg-black/30 backdrop-blur-sm border-b border-purple-500/20 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-6">
+      <header className="bg-black/30 backdrop-blur-sm border-b border-purple-500/20">
+        <div className="container mx-auto px-4 py-6 text-center">
           <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
             ⚡ Grabbit
           </h1>
@@ -112,8 +112,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Compact Filter Carousel */}
-      <DealFilters onFilterChange={handleFilterChange} />
+      {/* Sticky Filter Carousel */}
+      <div className="sticky top-0 z-10 bg-black/30 backdrop-blur-sm border-b border-purple-500/20">
+        <DealFilters onFilterChange={handleFilterChange} />
+      </div>
 
       {/* Deals Grid */}
       <div className="container mx-auto px-4 py-8">
