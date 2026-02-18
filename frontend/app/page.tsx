@@ -19,8 +19,16 @@ export default function Home() {
         .limit(200);
 
       if (!error && data) {
+        // Filter out expired deals
+        const activeDeals = data.filter(deal => {
+          const isExpired = deal.category?.toLowerCase().includes('expired') ||
+                           deal.product_name?.toLowerCase().includes('expired') ||
+                           (deal.expires_at && new Date(deal.expires_at) < new Date());
+          return !isExpired;
+        });
+        
         // Auto-sort by discount % (high to low)
-        const sorted = [...data].sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
+        const sorted = [...activeDeals].sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
         setAllDeals(sorted);
         setFilteredDeals(sorted);
       }
