@@ -110,44 +110,8 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Stats Bar */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-purple-400">{allDeals.length}</p>
-              <p className="text-gray-400 text-sm">Total Deals</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-pink-400">
-                {deals.length > 0 ? Math.max(...deals.map(d => d.discount_percent ?? 0)) : 0}%
-              </p>
-              <p className="text-gray-400 text-sm">Best Discount</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-400">
-                {allDeals.filter(d => d.source.startsWith('reddit_')).length}
-              </p>
-              <p className="text-gray-400 text-sm">Reddit Deals</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-400">
-                {allDeals.filter(d => d.discount_percent && d.discount_percent >= 75).length}
-              </p>
-              <p className="text-gray-400 text-sm">75%+ OFF</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-orange-400">{deals.length}</p>
-              <p className="text-gray-400 text-sm">Showing</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="container mx-auto px-4 py-6">
-        <DealFilters onFilterChange={handleFilterChange} />
-      </div>
+      {/* Compact Filter Carousel */}
+      <DealFilters onFilterChange={handleFilterChange} />
 
       {/* Deals Grid */}
       <div className="container mx-auto px-4 py-8">
