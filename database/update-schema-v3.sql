@@ -1,4 +1,4 @@
--- DealsofDestiny v2.0 Schema Updates
+An-- DealsofDestiny v2.0 Schema Updates
 -- Adds support for deal aggregation sources (Slickdeals, Reddit, etc.)
 
 -- 1. Update source constraint to include new aggregators
