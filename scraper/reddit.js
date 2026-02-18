@@ -169,7 +169,16 @@ async function scrapeRedditSubreddit(subreddit) {
  * Scrape all configured Reddit subreddits
  */
 export async function scrapeReddit() {
-  const subreddits = ['buildapcsales', 'GameDeals'];
+  const subreddits = [
+    'buildapcsales',      // PC/Tech
+    'GameDeals',          // Video games
+    'MUAontheCheap',      // Makeup & beauty
+    'frugalmalefashion',  // Men's fashion
+    'frugalfemalefashion',// Women's fashion
+    'legodeals',          // LEGO toys
+    'boardgamedeals',     // Board games
+    'Sneakers'            // Sneaker deals
+  ];
   
   const results = await Promise.allSettled(
     subreddits.map(sub => scrapeRedditSubreddit(sub))

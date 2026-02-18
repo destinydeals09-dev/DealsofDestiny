@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Deals of Destiny | Best Electronics & Gaming Deals",
-  description: "Your daily source for the hottest deals on electronics and gaming from Best Buy, Newegg, and Steam. Updated daily with massive discounts.",
-  keywords: ["deals", "electronics", "gaming", "best buy", "newegg", "steam", "discounts", "sales"],
+  title: "Grabbit | 50%+ OFF Deals on Gaming, Fashion, Beauty & Tech",
+  description: "Grab it before it's gone! Curated deals with 50%+ discounts on gaming, fashion, beauty, tech, and toys. Updated every 6 hours from Reddit, Steam, and more.",
+  keywords: ["deals", "discounts", "gaming", "fashion", "beauty", "tech", "toys", "50% off", "sales", "grabbit"],
 };
 
 export default function RootLayout({

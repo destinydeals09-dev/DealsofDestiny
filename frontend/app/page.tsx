@@ -1,36 +1,111 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import DealCard from '@/components/DealCard';
+import DealFilters, { FilterState } from '@/components/DealFilters';
 import type { Deal } from '@/lib/supabase';
 
-async function getDeals(): Promise<Deal[]> {
-  const { data, error } = await supabase
-    .from('deep_discount_deals') // v2.0: Only 50%+ discounts
-    .select('*')
-    .limit(100); // Increased limit
+export default function Home() {
+  const [allDeals, setAllDeals] = useState<Deal[]>([]);
+  const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (error) {
-    console.error('Error fetching deals:', error);
-    return [];
-  }
+  useEffect(() => {
+    async function fetchDeals() {
+      const { data, error } = await supabase
+        .from('deep_discount_deals')
+        .select('*')
+        .limit(200);
 
-  return data || [];
-}
+      if (!error && data) {
+        setAllDeals(data);
+        setFilteredDeals(data);
+      }
+      setLoading(false);
+    }
 
-export const revalidate = 300; // Revalidate every 5 minutes
+    fetchDeals();
+    
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchDeals, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-export default async function Home() {
-  const deals = await getDeals();
+  const handleFilterChange = (filters: FilterState) => {
+    let filtered = [...allDeals];
+
+    // Search filter
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      filtered = filtered.filter(deal =>
+        deal.product_name.toLowerCase().includes(search)
+      );
+    }
+
+    // Category filter (basic - maps common keywords)
+    if (filters.category) {
+      filtered = filtered.filter(deal => {
+        const name = deal.product_name.toLowerCase();
+        const source = deal.source.toLowerCase();
+        
+        switch (filters.category) {
+          case 'gaming':
+            return source.includes('game') || source.includes('steam') || name.includes('game');
+          case 'fashion':
+            return source.includes('fashion') || source.includes('sneaker');
+          case 'beauty':
+            return source.includes('mua') || source.includes('beauty');
+          case 'tech':
+            return source.includes('buildapcsales') || name.includes('pc') || name.includes('monitor');
+          case 'toys':
+            return source.includes('lego') || source.includes('toy');
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Source filter
+    if (filters.source) {
+      filtered = filtered.filter(deal => deal.source === filters.source);
+    }
+
+    // Minimum discount filter
+    if (filters.minDiscount > 50) {
+      filtered = filtered.filter(deal => 
+        deal.discount_percent && deal.discount_percent >= filters.minDiscount
+      );
+    }
+
+    // Sort
+    switch (filters.sortBy) {
+      case 'discount':
+        filtered.sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
+        break;
+      case 'newest':
+        filtered.sort((a, b) => new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime());
+        break;
+      case 'quality':
+        filtered.sort((a, b) => (b.quality_score ?? 0) - (a.quality_score ?? 0));
+        break;
+    }
+
+    setFilteredDeals(filtered);
+  };
+
+  const deals = filteredDeals;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
       <header className="bg-black/30 backdrop-blur-sm border-b border-purple-500/20 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-            🔥 Deals of Destiny
+          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+            ⚡ Grabbit
           </h1>
-          <p className="text-gray-300 mt-2">
-            Only the deepest discounts: 50%+ OFF deals, updated every 6 hours
+          <p className="text-gray-300 mt-2 text-lg">
+            Grab it before it's gone! Only 50%+ OFF deals • Updated every 6 hours
           </p>
         </div>
       </header>
@@ -38,10 +113,10 @@ export default async function Home() {
       {/* Stats Bar */}
       <div className="container mx-auto px-4 py-6">
         <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-purple-400">{deals.length}</p>
-              <p className="text-gray-400 text-sm">Active Deals</p>
+              <p className="text-2xl font-bold text-purple-400">{allDeals.length}</p>
+              <p className="text-gray-400 text-sm">Total Deals</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-pink-400">
@@ -51,26 +126,44 @@ export default async function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold text-blue-400">
-                {deals.filter(d => d.source.startsWith('reddit_')).length}
+                {allDeals.filter(d => d.source.startsWith('reddit_')).length}
               </p>
               <p className="text-gray-400 text-sm">Reddit Deals</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-green-400">
-                {deals.filter(d => d.discount_percent && d.discount_percent >= 75).length}
+                {allDeals.filter(d => d.discount_percent && d.discount_percent >= 75).length}
               </p>
               <p className="text-gray-400 text-sm">75%+ OFF</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-orange-400">{deals.length}</p>
+              <p className="text-gray-400 text-sm">Showing</p>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="container mx-auto px-4 py-6">
+        <DealFilters onFilterChange={handleFilterChange} />
+      </div>
+
       {/* Deals Grid */}
       <div className="container mx-auto px-4 py-8">
-        {deals.length === 0 ? (
+        {loading ? (
           <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+            <p className="text-xl text-gray-400 mt-4">Loading deals...</p>
+          </div>
+        ) : deals.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-3xl mb-4">😔</p>
             <p className="text-2xl text-gray-400">
-              🔄 Scraping deals... Check back soon!
+              No deals match your filters
+            </p>
+            <p className="text-gray-500 mt-2">
+              Try adjusting your search or filters
             </p>
           </div>
         ) : (
@@ -85,9 +178,11 @@ export default async function Home() {
       {/* Footer */}
       <footer className="bg-black/30 backdrop-blur-sm border-t border-purple-500/20 mt-20">
         <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
-          <p>🚀 Built by E & Dezi 📊 | Updated every 6 hours</p>
-          <p className="mt-2">Deals aggregated from Reddit, Slickdeals, Steam, and more</p>
+          <p className="text-lg font-semibold text-purple-400">⚡ grabbit.gg</p>
+          <p className="mt-2">Grab it before it's gone! Updated every 6 hours</p>
+          <p className="mt-2">Gaming • Fashion • Beauty • Tech • Toys</p>
           <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF deals shown 🔥</p>
+          <p className="mt-3 text-xs">Built by E & Dezi 📊</p>
         </div>
       </footer>
     </main>

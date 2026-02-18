@@ -89,7 +89,12 @@ async function main() {
     runScraper(scrapeReddit, 'reddit'),
     runScraper(scrapeSteam, 'steam'),
     
-    // v1.0 Retail scrapers (archived - anti-bot issues)
+    // v2.1 Beauty & Toys (Worth trying despite anti-bot)
+    runScraper(scrapeSephora, 'sephora'),
+    runScraper(scrapeUlta, 'ulta'),
+    runScraper(scrapeToysRUs, 'toysrus'),
+    
+    // v1.0 Retail scrapers (archived - severe anti-bot issues)
     // runScraper(scrapeBestBuy, 'bestbuy'),
     // runScraper(scrapeNewegg, 'newegg'),
     // runScraper(scrapeAmazon, 'amazon'),
@@ -98,9 +103,6 @@ async function main() {
     // runScraper(scrapeTarget, 'target'),
     // runScraper(scrapeWalmart, 'walmart'),
     // runScraper(scrapeBHPhoto, 'bhphoto'),
-    // runScraper(scrapeSephora, 'sephora'),
-    // runScraper(scrapeUlta, 'ulta'),
-    // runScraper(scrapeToysRUs, 'toysrus')
   ]);
 
   // Summary
