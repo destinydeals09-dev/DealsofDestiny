@@ -1,3 +1,6 @@
+'use client';
+
+import React from 'react';
 import type { Deal } from '@/lib/supabase';
 import Image from 'next/image';
 
@@ -90,6 +93,8 @@ const getCategoryIcon = (deal: Deal) => {
 };
 
 export default function DealCard({ deal }: DealCardProps) {
+  const [imageError, setImageError] = React.useState(false);
+  
   const savings = deal.original_price
     ? (deal.original_price - deal.sale_price).toFixed(2)
     : null;
@@ -103,13 +108,14 @@ export default function DealCard({ deal }: DealCardProps) {
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
-        {deal.image_url ? (
+        {deal.image_url && !imageError ? (
           <Image
             src={deal.image_url}
             alt={deal.product_name}
             fill
             className="object-contain p-4 group-hover:scale-110 transition-transform duration-300"
             unoptimized
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="text-9xl opacity-30 group-hover:scale-110 transition-transform duration-300">

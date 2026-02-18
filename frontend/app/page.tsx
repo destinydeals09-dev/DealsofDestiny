@@ -111,7 +111,7 @@ export default function Home() {
           {/* Content */}
           <div className="relative z-10">
             <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-              ⚡ Grabbit
+              Grabbit
             </h1>
             <p className="text-gray-300 mt-2 text-lg">
               Grab it before it's gone! Only 50%+ OFF deals • Updated every 6 hours
