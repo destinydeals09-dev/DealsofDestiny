@@ -5,7 +5,7 @@ interface DealCardProps {
   deal: Deal;
 }
 
-const sourceColors = {
+const sourceColors: Record<string, string> = {
   bestbuy: 'from-blue-500 to-blue-700',
   newegg: 'from-orange-500 to-red-600',
   steam: 'from-purple-500 to-indigo-600',
@@ -17,10 +17,13 @@ const sourceColors = {
   bhphoto: 'from-green-500 to-teal-600',
   sephora: 'from-black to-gray-800',
   ulta: 'from-pink-500 to-rose-600',
-  toysrus: 'from-blue-500 to-cyan-500'
+  toysrus: 'from-blue-500 to-cyan-500',
+  reddit_buildapcsales: 'from-orange-500 to-red-600',
+  reddit_GameDeals: 'from-orange-500 to-red-600',
+  slickdeals: 'from-green-500 to-emerald-600'
 };
 
-const sourceLogos = {
+const sourceLogos: Record<string, string> = {
   bestbuy: '🛒',
   newegg: '🖥️',
   steam: '🎮',
@@ -32,7 +35,18 @@ const sourceLogos = {
   bhphoto: '📷',
   sephora: '💄',
   ulta: '💅',
-  toysrus: '🧸'
+  toysrus: '🧸',
+  reddit_buildapcsales: '🎮',
+  reddit_GameDeals: '🎮',
+  slickdeals: '🔥'
+};
+
+// Helper to get source display name
+const getSourceDisplay = (source: string) => {
+  if (source.startsWith('reddit_')) {
+    return `r/${source.replace('reddit_', '')}`;
+  }
+  return source;
 };
 
 export default function DealCard({ deal }: DealCardProps) {
@@ -69,8 +83,8 @@ export default function DealCard({ deal }: DealCardProps) {
         )}
 
         {/* Source Badge */}
-        <div className={`absolute bottom-2 left-2 bg-gradient-to-r ${sourceColors[deal.source]} text-white text-xs font-semibold px-3 py-1 rounded-full capitalize shadow-lg`}>
-          {sourceLogos[deal.source]} {deal.source}
+        <div className={`absolute bottom-2 left-2 bg-gradient-to-r ${sourceColors[deal.source] || 'from-gray-500 to-gray-700'} text-white text-xs font-semibold px-3 py-1 rounded-full capitalize shadow-lg`}>
+          {sourceLogos[deal.source] || '🔗'} {getSourceDisplay(deal.source)}
         </div>
       </div>
 

@@ -4,9 +4,9 @@ import type { Deal } from '@/lib/supabase';
 
 async function getDeals(): Promise<Deal[]> {
   const { data, error } = await supabase
-    .from('hot_deals')
+    .from('deep_discount_deals') // v2.0: Only 50%+ discounts
     .select('*')
-    .limit(50);
+    .limit(100); // Increased limit
 
   if (error) {
     console.error('Error fetching deals:', error);
@@ -27,10 +27,10 @@ export default async function Home() {
       <header className="bg-black/30 backdrop-blur-sm border-b border-purple-500/20 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-            ⚡ Deals of Destiny
+            🔥 Deals of Destiny
           </h1>
           <p className="text-gray-300 mt-2">
-            The hottest deals on electronics & gaming, updated daily
+            Only the deepest discounts: 50%+ OFF deals, updated every 6 hours
           </p>
         </div>
       </header>
@@ -51,15 +51,15 @@ export default async function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold text-blue-400">
-                {deals.filter(d => d.source === 'steam').length}
+                {deals.filter(d => d.source.startsWith('reddit_')).length}
               </p>
-              <p className="text-gray-400 text-sm">Steam Deals</p>
+              <p className="text-gray-400 text-sm">Reddit Deals</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-green-400">
-                {deals.filter(d => d.source === 'bestbuy' || d.source === 'newegg').length}
+                {deals.filter(d => d.discount_percent >= 75).length}
               </p>
-              <p className="text-gray-400 text-sm">Tech Deals</p>
+              <p className="text-gray-400 text-sm">75%+ OFF</p>
             </div>
           </div>
         </div>
@@ -85,8 +85,9 @@ export default async function Home() {
       {/* Footer */}
       <footer className="bg-black/30 backdrop-blur-sm border-t border-purple-500/20 mt-20">
         <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
-          <p>🚀 Built by E & Dezi 📊 | Updated daily at 6 AM PST</p>
-          <p className="mt-2">Deals aggregated from Best Buy, Newegg, and Steam</p>
+          <p>🚀 Built by E & Dezi 📊 | Updated every 6 hours</p>
+          <p className="mt-2">Deals aggregated from Reddit, Slickdeals, Steam, and more</p>
+          <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF deals shown 🔥</p>
         </div>
       </footer>
     </main>

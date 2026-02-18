@@ -1,0 +1,14 @@
+{
+  "name": "DealsofDestiny Scraper",
+  "schedule": {
+    "kind": "cron",
+    "expr": "0 */6 * * *",
+    "tz": "America/Los_Angeles"
+  },
+  "payload": {
+    "kind": "systemEvent",
+    "text": "🕷️ Running DealsofDestiny scrapers...\n\nExecute:\ncd /Users/destiny/.openclaw/workspace/DealsofDestiny && npm run scrape\n\nThen report:\n- How many deals scraped\n- Any errors\n- Total deals in database now\n\nKeep it brief unless there are problems."
+  },
+  "sessionTarget": "main",
+  "enabled": true
+}
