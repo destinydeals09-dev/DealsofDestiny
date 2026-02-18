@@ -19,16 +19,28 @@ export default function Home() {
         .limit(200);
 
       if (!error && data) {
-        // Filter out expired deals
-        const activeDeals = data.filter(deal => {
+        // Filter out expired deals AND cheap items
+        const qualityDeals = data.filter(deal => {
+          // Check if expired
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
                            deal.product_name?.toLowerCase().includes('expired') ||
                            (deal.expires_at && new Date(deal.expires_at) < new Date());
-          return !isExpired;
+          if (isExpired) return false;
+          
+          // Calculate original price if missing
+          let originalPrice = deal.original_price;
+          if (!originalPrice && deal.sale_price && deal.discount_percent) {
+            // Formula: original = sale / (1 - discount/100)
+            // Example: $25 at 50% off = $25 / 0.5 = $50 original
+            originalPrice = deal.sale_price / (1 - deal.discount_percent / 100);
+          }
+          
+          // Only show items originally $50+
+          return originalPrice && originalPrice >= 50;
         });
         
         // Auto-sort by discount % (high to low)
-        const sorted = [...activeDeals].sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
+        const sorted = [...qualityDeals].sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
         setAllDeals(sorted);
         setFilteredDeals(sorted);
       }
@@ -122,7 +134,7 @@ export default function Home() {
               Grabbit
             </h1>
             <p className="text-gray-300 mt-2 text-lg">
-              Grab it before it's gone! Only 50%+ OFF deals • Updated every 6 hours
+              Grab it before it's gone! Only 50%+ OFF on $50+ items • Updated every 6 hours
             </p>
           </div>
         </div>
@@ -165,7 +177,8 @@ export default function Home() {
           <p className="text-lg font-semibold text-purple-400">⚡ grabbit.gg</p>
           <p className="mt-2">Grab it before it's gone! Updated every 6 hours</p>
           <p className="mt-2">Gaming • Fashion • Beauty • Tech • Toys</p>
-          <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF deals shown 🔥</p>
+          <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF on $50+ items 🔥</p>
+          <p className="mt-1 text-xs text-gray-500">Quality deals on expensive items only</p>
           <p className="mt-3 text-xs">Built by E & Dezi 📊</p>
         </div>
       </footer>
