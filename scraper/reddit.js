@@ -218,8 +218,7 @@ export async function scrapeReddit() {
     
     // General Deals
     'deals',              // General deal aggregator
-    'DealsReddit',        // Another general deals sub
-    'BestDeals'           // Best deals across categories
+    'DealsReddit'         // Another general deals sub
   ];
   
   const results = await Promise.allSettled(
