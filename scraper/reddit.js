@@ -143,12 +143,43 @@ async function scrapeRedditSubreddit(subreddit) {
       const price = extractPrice(title);
       const category = extractCategory(title, flairText);
       
-      // Get thumbnail/image
+      // Get best quality image - prioritize actual product images
       let imageUrl = null;
-      if (data.thumbnail && data.thumbnail.startsWith('http')) {
+      
+      // Skip Reddit's default thumbnails
+      const skipThumbnails = ['self', 'default', 'nsfw', 'image', 'spoiler'];
+      const isValidThumbnail = data.thumbnail && 
+                               !skipThumbnails.includes(data.thumbnail) &&
+                               data.thumbnail.startsWith('http');
+      
+      // Priority 1: High-res preview image from Reddit (usually product images)
+      if (data.preview?.images?.[0]?.source?.url) {
+        const previewUrl = data.preview.images[0].source.url.replace(/&amp;/g, '&');
+        // Make sure it's not a reddit placeholder
+        if (!previewUrl.includes('redditmedia.com/awards/')) {
+          imageUrl = previewUrl;
+        }
+      }
+      
+      // Priority 2: External link that's an image
+      if (!imageUrl && data.url_overridden_by_dest) {
+        const destUrl = data.url_overridden_by_dest;
+        if (destUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          imageUrl = destUrl;
+        }
+      }
+      
+      // Priority 3: Valid thumbnail (not Reddit icon)
+      if (!imageUrl && isValidThumbnail) {
         imageUrl = data.thumbnail;
-      } else if (data.preview?.images?.[0]?.source?.url) {
-        imageUrl = data.preview.images[0].source.url.replace(/&amp;/g, '&');
+      }
+      
+      // Priority 4: Extract image URL from post text
+      if (!imageUrl && selftext) {
+        const imgMatch = selftext.match(/https?:\/\/[^\s\)\]]+\.(jpg|jpeg|png|gif|webp)/i);
+        if (imgMatch) {
+          imageUrl = imgMatch[0];
+        }
       }
       
       // Calculate quality score based on upvotes and comments
