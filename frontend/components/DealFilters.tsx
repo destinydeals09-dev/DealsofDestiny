@@ -35,7 +35,11 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
     { id: 'fashion', label: 'Fashion', emoji: '👗' },
     { id: 'beauty', label: 'Beauty', emoji: '💄' },
     { id: 'tech', label: 'Tech', emoji: '💻' },
+    { id: 'home', label: 'Home', emoji: '🏠' },
+    { id: 'kitchen', label: 'Kitchen', emoji: '🍳' },
+    { id: 'fitness', label: 'Fitness', emoji: '💪' },
     { id: 'toys', label: 'Toys', emoji: '🧸' },
+    { id: 'books', label: 'Books', emoji: '📚' },
   ];
 
   const getSortLabel = () => {

@@ -92,7 +92,7 @@ export default function Home() {
       );
     }
 
-    // Category filter (basic - maps common keywords)
+    // Category filter (expanded for all categories)
     if (filters.category) {
       filtered = filtered.filter(deal => {
         const name = deal.product_name.toLowerCase();
@@ -107,8 +107,16 @@ export default function Home() {
             return source.includes('mua') || source.includes('beauty');
           case 'tech':
             return source.includes('buildapcsales') || name.includes('pc') || name.includes('monitor');
+          case 'home':
+            return source.includes('furniture') || source.includes('homedecor') || name.includes('furniture') || name.includes('home');
+          case 'kitchen':
+            return source.includes('cooking') || name.includes('kitchen') || name.includes('cook');
+          case 'fitness':
+            return source.includes('fitness') || name.includes('fitness') || name.includes('gym');
           case 'toys':
-            return source.includes('lego') || source.includes('toy');
+            return source.includes('lego') || source.includes('toy') || source.includes('boardgame');
+          case 'books':
+            return source.includes('book') || source.includes('ebook') || name.includes('book');
           default:
             return true;
         }
@@ -203,7 +211,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
           <p className="text-lg font-semibold text-purple-400">⚡ grabbit.gg</p>
           <p className="mt-2">Nationwide online deals • Updated every 6 hours</p>
-          <p className="mt-2">Gaming • Fashion • Beauty • Tech • Toys</p>
+          <p className="mt-2">Gaming • Fashion • Beauty • Tech • Home • Kitchen • Fitness • Books • Toys</p>
           <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF on $50+ items 🔥</p>
           <p className="mt-1 text-xs text-gray-500">Quality deals • No local/in-store only</p>
           <p className="mt-3 text-xs">Built by E & Dezi 📊</p>

@@ -188,14 +188,38 @@ async function scrapeRedditSubreddit(subreddit) {
  */
 export async function scrapeReddit() {
   const subreddits = [
-    'buildapcsales',      // PC/Tech
+    // Tech & Electronics
+    'buildapcsales',      // PC parts & components
     'GameDeals',          // Video games
+    
+    // Fashion & Beauty
     'MUAontheCheap',      // Makeup & beauty
     'frugalmalefashion',  // Men's fashion
     'frugalfemalefashion',// Women's fashion
+    'Sneakers',           // Sneaker deals
+    
+    // Home & Living
+    'furniture',          // Furniture deals
+    'HomeDecorating',     // Home decor
+    
+    // Kitchen & Appliances
+    'Cooking',            // Kitchen & cooking
+    
+    // Sports & Fitness
+    'FitnessDeals',       // Fitness equipment & gear
+    
+    // Toys & Games
     'legodeals',          // LEGO toys
     'boardgamedeals',     // Board games
-    'Sneakers'            // Sneaker deals
+    
+    // Books & Media
+    'ebookdeals',         // eBooks & digital books
+    'bookdeals',          // Physical books
+    
+    // General Deals
+    'deals',              // General deal aggregator
+    'DealsReddit',        // Another general deals sub
+    'BestDeals'           // Best deals across categories
   ];
   
   const results = await Promise.allSettled(

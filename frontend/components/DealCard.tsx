@@ -82,8 +82,32 @@ const getCategoryIcon = (deal: Deal) => {
     return '💻';
   }
   
+  // Home & Furniture
+  if (source.includes('furniture') || source.includes('homedecor') ||
+      name.includes('furniture') || name.includes('home') || name.includes('decor')) {
+    return '🏠';
+  }
+  
+  // Kitchen & Cooking
+  if (source.includes('cooking') || name.includes('kitchen') || 
+      name.includes('cook') || name.includes('appliance')) {
+    return '🍳';
+  }
+  
+  // Fitness
+  if (source.includes('fitness') || name.includes('fitness') || 
+      name.includes('gym') || name.includes('exercise')) {
+    return '💪';
+  }
+  
+  // Books
+  if (source.includes('book') || source.includes('ebook') || 
+      name.includes('book')) {
+    return '📚';
+  }
+  
   // Toys
-  if (source.includes('lego') || source.includes('toy') || 
+  if (source.includes('lego') || source.includes('toy') || source.includes('boardgame') ||
       name.includes('lego') || name.includes('toy')) {
     return '🧸';
   }
