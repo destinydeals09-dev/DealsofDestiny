@@ -19,13 +19,18 @@ export default function Home() {
         .limit(200);
 
       if (!error && data) {
-        // Filter out expired deals, cheap items, AND location-specific deals
+        // Filter out expired deals, cheap items, location-specific deals, AND Reddit links
         const qualityDeals = data.filter(deal => {
           // Check if expired
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
                            deal.product_name?.toLowerCase().includes('expired') ||
                            (deal.expires_at && new Date(deal.expires_at) < new Date());
           if (isExpired) return false;
+          
+          // Skip deals that link to Reddit (old data)
+          if (deal.product_url?.includes('reddit.com') || deal.product_url?.includes('redd.it')) {
+            return false;
+          }
           
           // Check if location-specific or in-store only
           const text = `${deal.product_name} ${deal.category || ''}`.toLowerCase();
