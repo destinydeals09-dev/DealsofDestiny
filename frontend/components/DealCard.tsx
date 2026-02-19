@@ -128,7 +128,7 @@ export default function DealCard({ deal }: DealCardProps) {
       href={deal.product_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden border border-purple-500/20 hover:border-purple-500/60 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20"
+      className="group block bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden border border-purple-500/20 hover:border-purple-500/60 hover:scale-[1.03] transition-all duration-150 hover:shadow-2xl hover:shadow-purple-500/30 active:scale-[0.98]"
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">

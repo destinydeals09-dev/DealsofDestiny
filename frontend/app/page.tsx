@@ -165,11 +165,11 @@ export default function Home() {
           
           {/* Content */}
           <div className="relative z-10">
-            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-              Grabbit
+            <h1 className="text-5xl font-bold italic text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 tracking-tight">
+              GRABIT
             </h1>
             <p className="text-gray-300 mt-2 text-lg">
-              50%+ OFF on $50+ items • Nationwide online deals only • Updated every 6 hours
+              ⚡ Lightning-fast deals • 50%+ OFF • $50+ items • Updated every 6 hours
             </p>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function Home() {
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-            <p className="text-xl text-gray-400 mt-4">Loading deals...</p>
+            <p className="text-xl text-gray-400 mt-4">⚡ Loading lightning-fast deals...</p>
           </div>
         ) : deals.length === 0 ? (
           <div className="text-center py-20">
@@ -209,11 +209,11 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-black/30 backdrop-blur-sm border-t border-purple-500/20 mt-20">
         <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
-          <p className="text-lg font-semibold text-purple-400">⚡ grabbit.gg</p>
-          <p className="mt-2">Nationwide online deals • Updated every 6 hours</p>
+          <p className="text-lg font-bold italic text-purple-400">⚡ GRABIT</p>
+          <p className="mt-2">⚡ Lightning-fast deals • Nationwide online only</p>
           <p className="mt-2">Gaming • Fashion • Beauty • Tech • Home • Kitchen • Fitness • Books • Toys</p>
           <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF on $50+ items 🔥</p>
-          <p className="mt-1 text-xs text-gray-500">Quality deals • No local/in-store only</p>
+          <p className="mt-1 text-xs text-gray-500">Quality deals • Updated every 6 hours</p>
           <p className="mt-3 text-xs">Built by E & Dezi 📊</p>
         </div>
       </footer>

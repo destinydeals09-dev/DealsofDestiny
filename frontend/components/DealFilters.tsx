@@ -76,10 +76,10 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
           <button
             key={cat.id}
             onClick={() => updateFilter('category', cat.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150 active:scale-95 ${
               filters.category === cat.id
-                ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/50'
-                : 'bg-black/40 text-gray-300 border border-purple-500/20 hover:border-purple-500/50'
+                ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/50 scale-105'
+                : 'bg-black/40 text-gray-300 border border-purple-500/20 hover:border-purple-500/50 hover:scale-105'
             }`}
           >
             {cat.emoji} {cat.label}
