@@ -177,13 +177,13 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono">
       {/* Header - Terminal Style */}
-      <header className="bg-surface/80 backdrop-blur-md border-b border-[#252529] sticky top-0 z-50">
+      <header className="bg-[#1b1b20]/95 backdrop-blur-md border-b border-[#2b2b31] sticky top-0 z-50">
         <div className="container mx-auto px-4 h-[88px] flex items-center justify-between">
           <div className="flex flex-col items-start justify-center leading-tight">
             <h1 className="text-2xl leading-none font-light italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
               GRABBIT
             </h1>
-            <p className="text-[12px] text-terminal-green/85 italic mt-1">Grab it before it&apos;s gone!</p>
+            <p className="text-[12px] text-terminal-green/85 italic mt-1">before it&apos;s gone</p>
           </div>
 
           <div className="h-full flex items-end justify-end">
