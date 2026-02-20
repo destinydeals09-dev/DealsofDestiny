@@ -11,6 +11,17 @@ export default function Home() {
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const isValidProductImageUrl = (url?: string | null) => {
+    if (!url) return false;
+    const u = url.toLowerCase();
+    if (!u.startsWith('http')) return false;
+    if (u.length < 12) return false;
+
+    // Block obvious non-product/fallback assets
+    const blocked = ['logo', 'icon', 'sprite', 'placeholder', 'favicon', 'avatar', 'brandmark'];
+    return !blocked.some(token => u.includes(token));
+  };
+
   useEffect(() => {
     async function fetchDeals() {
       const { data, error } = await supabase
@@ -33,7 +44,7 @@ export default function Home() {
           }
 
           // Must have a real product image + direct e-commerce link
-          const hasImage = Boolean(deal.image_url && deal.image_url.trim().length > 10);
+          const hasImage = isValidProductImageUrl(deal.image_url);
           const hasDirectLink = Boolean(
             deal.product_url &&
             deal.product_url.startsWith('http') &&
@@ -72,7 +83,7 @@ export default function Home() {
           }
           
           // Lowered threshold to increase inventory density
-          return originalPrice && originalPrice >= 20;
+          return originalPrice && originalPrice >= 15;
         });
         
         // Auto-sort by discount % (high to low)
@@ -167,16 +178,19 @@ export default function Home() {
     <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono">
       {/* Header - Terminal Style */}
       <header className="bg-surface/80 backdrop-blur-md border-b border-[#252529] sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-[53px] flex items-center justify-center gap-4">
-          <h1 className="text-2xl font-light italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
-            GRABBIT
-          </h1>
-          <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-8 w-8 object-contain" />
+        <div className="container mx-auto px-4 py-2 flex flex-col items-center justify-center">
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-2xl leading-none font-light italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
+              GRABBIT
+            </h1>
+            <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-8 w-8 object-contain align-middle" />
+          </div>
+          <p className="text-[11px] text-terminal-green/80 italic mt-0.5">...before it&apos;s gone!</p>
         </div>
       </header>
 
       {/* Filter Bar */}
-      <div className="sticky top-[53px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
+      <div className="sticky top-[68px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
         <DealFilters onFilterChange={handleFilterChange} />
       </div>
 

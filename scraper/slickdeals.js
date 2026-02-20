@@ -3,21 +3,36 @@ import Parser from 'rss-parser';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
+const browserHeaders = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+};
+
 const SLICKDEALS_RSS_FEEDS = [
   { url: 'https://feeds.feedburner.com/SlickdealsnetFP?format=xml', category: 'general' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=beauty', category: 'beauty' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=makeup', category: 'beauty' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=skincare', category: 'beauty' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=sephora', category: 'beauty' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=ulta', category: 'beauty' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=toys', category: 'toys' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=lego', category: 'toys' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=laptop', category: 'tech' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=monitor', category: 'tech' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=home', category: 'home' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=apparel', category: 'fashion' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=shoes', category: 'fashion' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=nike', category: 'fashion' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=adidas', category: 'fashion' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=kitchen', category: 'kitchen' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=cookware', category: 'kitchen' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=appliance', category: 'kitchen' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=blender', category: 'kitchen' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=knife', category: 'kitchen' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=gaming', category: 'gaming' }
 ];
 
-const MIN_ORIGINAL_PRICE = 20; // $20 minimum original price (lowered from 50)
-const MIN_DISCOUNT_PCT = 20; // Lowered to 20% to increase volume
+const MIN_ORIGINAL_PRICE = 15; // Lowered again to increase category volume
+const MIN_DISCOUNT_PCT = 15; // Lowered again to increase category volume
 
 /**
  * Resolve final URL from a redirect link (HEAD request)
@@ -25,17 +40,79 @@ const MIN_DISCOUNT_PCT = 20; // Lowered to 20% to increase volume
 async function resolveFinalUrl(url) {
   if (!url || !url.includes('slickdeals.net')) return url;
 
+  // Try extracting a direct URL from query params first (if present)
   try {
-    const response = await axios.head(url, {
-      maxRedirects: 5,
+    const parsed = new URL(url);
+    const direct = parsed.searchParams.get('url') || parsed.searchParams.get('u') || parsed.searchParams.get('redirect');
+    if (direct && direct.startsWith('http')) return decodeURIComponent(direct);
+  } catch (_) {
+    // ignore URL parse failures and continue
+  }
+
+  // Fallback: follow redirects with GET (HEAD is frequently blocked)
+  try {
+    const response = await axios.get(url, {
+      maxRedirects: 8,
+      timeout: 6000,
       validateStatus: status => status >= 200 && status < 400,
-      timeout: 5000 // 5s timeout
+      headers: browserHeaders
     });
-    // Axios follows redirects by default, so response.request.res.responseUrl is the final one
-    return response.request.res.responseUrl || url;
+
+    return response?.request?.res?.responseUrl || url;
   } catch (err) {
-    // If HEAD fails (some sites block it), try GET with small range or just return original
     return url;
+  }
+}
+
+async function fetchMerchantImage(productUrl) {
+  if (!productUrl || !productUrl.startsWith('http')) return null;
+  if (productUrl.includes('slickdeals.net')) return null;
+
+  try {
+    const response = await axios.get(productUrl, {
+      maxRedirects: 5,
+      timeout: 7000,
+      headers: browserHeaders,
+      validateStatus: status => status >= 200 && status < 400
+    });
+
+    const finalUrl = response?.request?.res?.responseUrl || productUrl;
+    if (finalUrl.includes('slickdeals.net')) return null;
+
+    const html = response.data || '';
+    const $ = cheerio.load(html);
+
+    const candidates = [
+      $('meta[property="og:image"]').attr('content'),
+      $('meta[property="og:image:url"]').attr('content'),
+      $('meta[name="twitter:image"]').attr('content'),
+      $('meta[name="twitter:image:src"]').attr('content'),
+      $('img#landingImage').attr('src'),
+      $('img#imgBlkFront').attr('src'),
+      $('img').first().attr('src')
+    ].filter(Boolean);
+
+    for (const c of candidates) {
+      const img = String(c).trim();
+      if (!img) continue;
+      if (img.startsWith('data:')) continue;
+      if (img.includes('slickdealscdn.com')) continue;
+      if (img.length < 12) continue;
+
+      const lowered = img.toLowerCase();
+      const blocked = ['logo', 'icon', 'sprite', 'placeholder', 'favicon', 'avatar', 'brandmark'];
+      if (blocked.some(token => lowered.includes(token))) continue;
+
+      try {
+        return new URL(img, finalUrl).toString();
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
   }
 }
 
@@ -109,40 +186,40 @@ export async function scrapeSlickdeals() {
       ]
     }
   });
-  
+
   let allDeals = [];
 
   for (const feedSource of SLICKDEALS_RSS_FEEDS) {
     try {
       console.log(`📡 Fetching Slickdeals RSS feed for ${feedSource.category}...`);
       const feed = await parser.parseURL(feedSource.url);
-      
+
       const deals = [];
-      
+
       for (const item of feed.items) {
         const title = item.title || '';
         const description = item.description || '';
         const link = item.link || '';
-        
+
         // Extract discount percentage
         let discountPct = extractDiscountPercent(title, description);
-  
+
         // Extract price
         const price = extractPrice(title, description);
-  
+
         // Extract the deal link from content (usually the first link)
         let dealLink = link; // Default to thread link if we can't find better
-        
+
         try {
           const content = item['content:encoded'] || description;
           const $ = cheerio.load(content);
-          
+
           // Find the first link that isn't an image or internal
           const firstLink = $('a').filter((i, el) => {
             const href = $(el).attr('href');
             return href && href.includes('slickdeals.net/click');
           }).first().attr('href');
-  
+
           if (firstLink) {
             dealLink = await resolveFinalUrl(firstLink);
           } else {
@@ -151,13 +228,13 @@ export async function scrapeSlickdeals() {
                const href = $(el).attr('href');
                return href && !href.includes('slickdeals.net') && href.startsWith('http');
              }).first().attr('href');
-             
+
              if (externalLink) dealLink = externalLink;
           }
         } catch (err) {
           // Ignore
         }
-  
+
         // Filter: High Ticket Items Only ($20+ original price)
         // Calculate original price if missing
         let originalPrice = 0;
@@ -166,50 +243,37 @@ export async function scrapeSlickdeals() {
         } else if (price > 20) {
           originalPrice = price; // Assume original was at least the sale price
         }
-  
+
         if (originalPrice < MIN_ORIGINAL_PRICE) {
           continue;
         }
-  
+
         // Filter: Only deals with 20%+ discount
         if (!discountPct && price > 0) {
           // If discount % wasn't parsed, assume good deal if it's on Frontpage
-          discountPct = 25; 
+          discountPct = 25;
         }
-        
+
         if (discountPct < MIN_DISCOUNT_PCT) {
           continue;
         }
-        
-        // Extract image from description HTML (Handle both encoded and raw description)
-        let imageUrl = null;
-        try {
-          const content = item['content:encoded'] || description;
-          const $ = cheerio.load(content);
-          imageUrl = $('img').first().attr('src');
-          
-          // Fix thumb images to full size if possible
-          if (imageUrl && imageUrl.includes('.thumb')) {
-            imageUrl = imageUrl.replace('.thumb', '');
-          }
-        } catch (err) {
-          // No image, that's okay
+
+        // Must resolve to a direct merchant URL
+        if (!dealLink || !dealLink.startsWith('http') || dealLink.includes('slickdeals.net')) {
+          continue;
         }
 
-        // Filter: Strict Image Requirement (user: "do not show any products that do not have a product image piped in")
+        // Pull product image from the destination merchant page (not Slickdeals CDN)
+        const imageUrl = await fetchMerchantImage(dealLink);
+
+        // Strict requirement: no merchant image => no product
         if (!imageUrl) {
-            // Try one more time to find image in description if cheerio failed
-            const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
-            if (imgMatch) imageUrl = imgMatch[1];
+          continue;
         }
-        
-        if (!imageUrl || imageUrl.includes('pixel') || imageUrl.length < 10) {
-            continue; // Skip if no valid image found
-        }
-  
+
         // Categorize based on keywords OR feed source
         let category = feedSource.category;
-        
+
         // Refine 'general' category if possible
         if (category === 'general') {
             const text = (title + ' ' + description).toLowerCase();
@@ -221,7 +285,7 @@ export async function scrapeSlickdeals() {
             else if (text.match(/kitchen|cook|pan|pot|blender|mixer|knife/)) category = 'kitchen';
             else if (text.match(/game|console|ps5|xbox|switch|steam|nintendo|playstation/)) category = 'gaming';
         }
-  
+
         // Build deal object
         const deal = {
           product_name: title.trim(),
@@ -236,13 +300,13 @@ export async function scrapeSlickdeals() {
           quality_score: 100, // Slickdeals frontpage is high quality
           is_active: true
         };
-        
+
         deals.push(deal);
       }
-      
+
       console.log(`✅ Slickdeals (${feedSource.category}): Found ${deals.length} deals`);
       allDeals = allDeals.concat(deals);
-      
+
     } catch (error) {
       console.error(`❌ Slickdeals scraper error for ${feedSource.category}:`, error.message);
       // Continue to next feed
@@ -252,14 +316,14 @@ export async function scrapeSlickdeals() {
   // Deduplicate deals by URL
   const uniqueDeals = [];
   const seenUrls = new Set();
-  
+
   for (const deal of allDeals) {
     if (!seenUrls.has(deal.product_url)) {
       seenUrls.add(deal.product_url);
       uniqueDeals.push(deal);
     }
   }
-  
+
   console.log(`✅ Slickdeals Total: Found ${uniqueDeals.length} unique deals`);
   return uniqueDeals;
 }
