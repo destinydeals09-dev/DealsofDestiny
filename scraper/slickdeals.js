@@ -28,7 +28,13 @@ const SLICKDEALS_RSS_FEEDS = [
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=appliance', category: 'kitchen' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=blender', category: 'kitchen' },
   { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=knife', category: 'kitchen' },
-  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=gaming', category: 'gaming' }
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=gaming', category: 'gaming' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=fitness', category: 'fitness' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=gym', category: 'fitness' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=dumbbell', category: 'fitness' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=book', category: 'books' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=books', category: 'books' },
+  { url: 'https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1&q=kindle', category: 'books' }
 ];
 
 const MIN_ORIGINAL_PRICE = 15; // Lowered again to increase category volume
@@ -283,6 +289,8 @@ export async function scrapeSlickdeals() {
             else if (text.match(/laptop|monitor|ssd|gpu|cpu|keyboard|mouse|headset|tech|computer|electronics/)) category = 'tech';
             else if (text.match(/sofa|chair|table|lamp|bed|furniture|home decor/)) category = 'home';
             else if (text.match(/kitchen|cook|pan|pot|blender|mixer|knife/)) category = 'kitchen';
+            else if (text.match(/fitness|gym|yoga|dumbbell|barbell|treadmill|protein|workout/)) category = 'fitness';
+            else if (text.match(/book|books|novel|kindle|paperback|hardcover|audiobook|ebook/)) category = 'books';
             else if (text.match(/game|console|ps5|xbox|switch|steam|nintendo|playstation/)) category = 'gaming';
         }
 
