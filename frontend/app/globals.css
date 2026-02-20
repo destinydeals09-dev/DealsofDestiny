@@ -4,7 +4,7 @@
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   
-  --color-background: #111114;
+  --color-background: #1a1a20;
   --color-surface: #111114;
   --color-surface-alt: #161619;
   --color-terminal-green: #39ff14;
@@ -14,7 +14,7 @@
 }
 
 :root {
-  --background: #111114;
+  --background: #1a1a20;
   --foreground: #e8e8ed;
   --terminal-green: #39ff14;
 }

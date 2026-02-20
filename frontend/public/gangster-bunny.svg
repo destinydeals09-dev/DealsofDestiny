@@ -18,14 +18,14 @@
     <rect x="21" y="9" width="6" height="2" fill="#0a0a0a"/>
 
     <!-- trenchcoat body -->
-    <rect x="11" y="13" width="11" height="8" fill="#121212"/>
-    <rect x="9" y="15" width="2" height="5" fill="#121212"/>
-    <rect x="22" y="15" width="2" height="5" fill="#121212"/>
-    <rect x="14" y="14" width="1" height="6" fill="#1f1f1f"/>
+    <rect x="11" y="13" width="11" height="8" fill="#000000"/>
+    <rect x="9" y="15" width="2" height="5" fill="#000000"/>
+    <rect x="22" y="15" width="2" height="5" fill="#000000"/>
+    <rect x="14" y="14" width="1" height="6" fill="#1a1a1a"/>
 
     <!-- running legs (stride) -->
-    <rect x="8" y="21" width="4" height="2" fill="#121212"/>
-    <rect x="21" y="22" width="4" height="2" fill="#121212"/>
+    <rect x="8" y="21" width="4" height="2" fill="#000000"/>
+    <rect x="21" y="22" width="4" height="2" fill="#000000"/>
 
     <!-- tiny white tail -->
     <rect x="9" y="14" width="2" height="2" fill="#ffffff"/>
@@ -42,14 +42,14 @@
     <rect x="21" y="8" width="6" height="2" fill="#0a0a0a"/>
 
     <!-- trenchcoat body -->
-    <rect x="11" y="12" width="11" height="8" fill="#121212"/>
-    <rect x="9" y="14" width="2" height="5" fill="#121212"/>
-    <rect x="22" y="14" width="2" height="5" fill="#121212"/>
-    <rect x="16" y="13" width="1" height="6" fill="#1f1f1f"/>
+    <rect x="11" y="12" width="11" height="8" fill="#000000"/>
+    <rect x="9" y="14" width="2" height="5" fill="#000000"/>
+    <rect x="22" y="14" width="2" height="5" fill="#000000"/>
+    <rect x="16" y="13" width="1" height="6" fill="#1a1a1a"/>
 
     <!-- running legs (gather) -->
-    <rect x="14" y="20" width="2" height="4" fill="#121212"/>
-    <rect x="17" y="20" width="2" height="4" fill="#121212"/>
+    <rect x="14" y="20" width="2" height="4" fill="#000000"/>
+    <rect x="17" y="20" width="2" height="4" fill="#000000"/>
 
     <!-- tiny white tail -->
     <rect x="9" y="13" width="2" height="2" fill="#ffffff"/>
