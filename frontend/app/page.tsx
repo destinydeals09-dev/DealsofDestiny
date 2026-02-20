@@ -178,19 +178,22 @@ export default function Home() {
     <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono">
       {/* Header - Terminal Style */}
       <header className="bg-surface/80 backdrop-blur-md border-b border-[#252529] sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-2 flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center gap-3">
+        <div className="container mx-auto px-4 h-[88px] flex items-center justify-between">
+          <div className="flex flex-col items-start justify-center leading-tight">
             <h1 className="text-2xl leading-none font-light italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
               GRABBIT
             </h1>
-            <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-8 w-8 object-contain align-middle" />
+            <p className="text-[12px] text-terminal-green/85 italic mt-1">Grab it before it&apos;s gone!</p>
           </div>
-          <p className="text-[11px] text-terminal-green/80 italic mt-0.5">...before it&apos;s gone!</p>
+
+          <div className="h-full flex items-end justify-end">
+            <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-[78px] w-[78px] object-contain" />
+          </div>
         </div>
       </header>
 
       {/* Filter Bar */}
-      <div className="sticky top-[68px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
+      <div className="sticky top-[88px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
         <DealFilters onFilterChange={handleFilterChange} />
       </div>
 
