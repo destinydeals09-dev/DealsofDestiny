@@ -27,10 +27,19 @@ export default function Home() {
                            (deal.expires_at && new Date(deal.expires_at) < new Date());
           if (isExpired) return false;
           
-          // Skip deals that link to Reddit (old data)
+          // ABSOLUTELY NO REDDIT LINKS
           if (deal.product_url?.includes('reddit.com') || deal.product_url?.includes('redd.it')) {
             return false;
           }
+
+          // Must have a real product image + direct e-commerce link
+          const hasImage = Boolean(deal.image_url && deal.image_url.trim().length > 10);
+          const hasDirectLink = Boolean(
+            deal.product_url &&
+            deal.product_url.startsWith('http') &&
+            !deal.product_url.includes('slickdeals.net')
+          );
+          if (!hasImage || !hasDirectLink) return false;
           
           // Check if location-specific or in-store only
           const text = `${deal.product_name} ${deal.category || ''}`.toLowerCase();
@@ -62,8 +71,8 @@ export default function Home() {
             originalPrice = deal.sale_price / (1 - deal.discount_percent / 100);
           }
           
-          // Only show items originally $50+
-          return originalPrice && originalPrice >= 50;
+          // Lowered threshold to increase inventory density
+          return originalPrice && originalPrice >= 20;
         });
         
         // Auto-sort by discount % (high to low)
@@ -97,26 +106,27 @@ export default function Home() {
       filtered = filtered.filter(deal => {
         const name = deal.product_name.toLowerCase();
         const source = deal.source.toLowerCase();
+        const category = (deal.category || '').toLowerCase();
         
         switch (filters.category) {
           case 'gaming':
-            return source.includes('game') || source.includes('steam') || name.includes('game');
+            return category === 'gaming' || source.includes('game') || source.includes('steam') || name.includes('game');
           case 'fashion':
-            return source.includes('fashion') || source.includes('sneaker');
+            return category === 'fashion' || source.includes('fashion') || source.includes('sneaker');
           case 'beauty':
-            return source.includes('mua') || source.includes('beauty');
+            return category === 'beauty' || source.includes('mua') || source.includes('beauty');
           case 'tech':
-            return source.includes('buildapcsales') || name.includes('pc') || name.includes('monitor');
+            return category === 'tech' || source.includes('buildapcsales') || name.includes('pc') || name.includes('monitor');
           case 'home':
-            return source.includes('furniture') || source.includes('homedecor') || name.includes('furniture') || name.includes('home');
+            return category === 'home' || source.includes('furniture') || source.includes('homedecor') || name.includes('furniture') || name.includes('home');
           case 'kitchen':
-            return source.includes('cooking') || name.includes('kitchen') || name.includes('cook');
+            return category === 'kitchen' || source.includes('cooking') || name.includes('kitchen') || name.includes('cook');
           case 'fitness':
-            return source.includes('fitness') || name.includes('fitness') || name.includes('gym');
+            return category === 'fitness' || source.includes('fitness') || name.includes('fitness') || name.includes('gym');
           case 'toys':
-            return source.includes('lego') || source.includes('toy') || source.includes('boardgame');
+            return category === 'toys' || source.includes('lego') || source.includes('toy') || source.includes('boardgame');
           case 'books':
-            return source.includes('book') || source.includes('ebook') || name.includes('book');
+            return category === 'books' || source.includes('book') || source.includes('ebook') || name.includes('book');
           default:
             return true;
         }
@@ -154,40 +164,41 @@ export default function Home() {
   const deals = filteredDeals;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header - Twitter Style */}
-      <header className="bg-black/80 backdrop-blur-sm border-b border-purple-500/20">
-        <div className="container mx-auto px-4 h-[53px] flex items-center">
-          <h1 className="text-2xl font-bold italic text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-            GRABIT
+    <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono">
+      {/* Header - Terminal Style */}
+      <header className="bg-surface/80 backdrop-blur-md border-b border-[#252529] sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-[53px] flex items-center justify-center gap-4">
+          <h1 className="text-2xl font-light italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
+            GRABBIT
           </h1>
+          <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-8 w-8 object-contain" />
         </div>
       </header>
 
-      {/* Sticky Filter Carousel */}
-      <div className="sticky top-0 z-10 bg-black/30 backdrop-blur-sm border-b border-purple-500/20">
+      {/* Filter Bar */}
+      <div className="sticky top-[53px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
         <DealFilters onFilterChange={handleFilterChange} />
       </div>
 
       {/* Deals Grid */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 relative">
         {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-            <p className="text-xl text-gray-400 mt-4">⚡ Loading lightning-fast deals...</p>
+          <div className="text-center py-20 font-mono">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-terminal-green mb-4"></div>
+            <p className="text-xl text-muted animate-pulse">
+              <span className="text-terminal-green">{'>'}</span> ACCESSING_MAINFRAME...
+            </p>
           </div>
         ) : deals.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-3xl mb-4">😔</p>
-            <p className="text-2xl text-gray-400">
-              No deals match your filters
-            </p>
-            <p className="text-gray-500 mt-2">
-              Try adjusting your search or filters
+          <div className="text-center py-20 border border-dashed border-[#252529] rounded-lg bg-surface/30">
+            <p className="text-4xl mb-4 grayscale opacity-50">👾</p>
+            <p className="text-2xl text-muted font-bold">NO_RESULTS_FOUND</p>
+            <p className="text-gray-500 mt-2 font-mono text-sm">
+              Try adjusting search parameters...
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 gap-4 md:gap-6 lg:gap-8">
             {deals.map((deal) => (
               <DealCard key={deal.id} deal={deal} />
             ))}
@@ -196,14 +207,37 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-black/30 backdrop-blur-sm border-t border-purple-500/20 mt-20">
-        <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
-          <p className="text-lg font-bold italic text-purple-400">⚡ GRABIT</p>
-          <p className="mt-2">⚡ Lightning-fast deals • Nationwide online only</p>
-          <p className="mt-2">Gaming • Fashion • Beauty • Tech • Home • Kitchen • Fitness • Books • Toys</p>
-          <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF on $50+ items 🔥</p>
-          <p className="mt-1 text-xs text-gray-500">Quality deals • Updated every 6 hours</p>
-          <p className="mt-3 text-xs">Built by E & Dezi 📊</p>
+      <footer className="bg-surface border-t border-[#252529] mt-20 py-12">
+        <div className="container mx-auto px-4 text-center text-muted text-sm font-mono">
+          <div className="mb-6 inline-flex items-center justify-center p-4 border border-[#252529] rounded-lg bg-background/50">
+            <div className="flex items-center gap-2">
+              <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-6 w-6 object-contain" />
+              <span className="text-lg font-light italic text-terminal-green tracking-wider glow-green">GRABBIT</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-left opacity-80">
+            <div>
+              <h3 className="text-foreground font-bold mb-2 uppercase text-xs tracking-widest text-emerald-500">Protocol</h3>
+              <p className="mb-1 text-xs">Lightning-fast deals</p>
+              <p className="mb-1 text-xs">Nationwide online only</p>
+              <p className="mb-1 text-xs">Updated every 6 hours</p>
+            </div>
+            <div>
+              <h3 className="text-foreground font-bold mb-2 uppercase text-xs tracking-widest text-emerald-500">Categories</h3>
+              <p className="mb-1 text-xs">Gaming • Tech • Home</p>
+              <p className="mb-1 text-xs">Fashion • Beauty • Toys</p>
+              <p className="mb-1 text-xs">Kitchen • Fitness • Books</p>
+            </div>
+            <div>
+              <h3 className="text-foreground font-bold mb-2 uppercase text-xs tracking-widest text-emerald-500">System</h3>
+              <p className="mb-1 text-xs text-terminal-green font-semibold">50%+ OFF on $50+ items 🔥</p>
+              <p className="mt-4 text-[10px] text-[#444]">
+                v2.0.4 • EST. 2026<br/>
+                Built by E & Dezi 📊
+              </p>
+            </div>
+          </div>
         </div>
       </footer>
     </main>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <style>
+    .f2 { display: none; }
+    @keyframes step1 { 0%,49.9% { display: block; } 50%,100% { display: none; } }
+    @keyframes step2 { 0%,49.9% { display: none; } 50%,100% { display: block; } }
+    .frame1 { animation: step1 0.24s infinite; }
+    .frame2 { animation: step2 0.24s infinite; }
+  </style>
+
+  <!-- Frame 1 -->
+  <g class="frame1">
+    <!-- white rabbit head + ears -->
+    <rect x="19" y="6" width="8" height="8" fill="#ffffff"/>
+    <rect x="22" y="1" width="2" height="5" fill="#ffffff"/>
+    <rect x="19" y="1" width="2" height="5" fill="#ffffff"/>
+
+    <!-- neo shades -->
+    <rect x="21" y="9" width="6" height="2" fill="#0a0a0a"/>
+
+    <!-- trenchcoat body -->
+    <rect x="11" y="13" width="11" height="8" fill="#121212"/>
+    <rect x="9" y="15" width="2" height="5" fill="#121212"/>
+    <rect x="22" y="15" width="2" height="5" fill="#121212"/>
+    <rect x="14" y="14" width="1" height="6" fill="#1f1f1f"/>
+
+    <!-- running legs (stride) -->
+    <rect x="8" y="21" width="4" height="2" fill="#121212"/>
+    <rect x="21" y="22" width="4" height="2" fill="#121212"/>
+
+    <!-- tiny white tail -->
+    <rect x="9" y="14" width="2" height="2" fill="#ffffff"/>
+  </g>
+
+  <!-- Frame 2 -->
+  <g class="frame2">
+    <!-- white rabbit head + ears (bob up) -->
+    <rect x="19" y="5" width="8" height="8" fill="#ffffff"/>
+    <rect x="22" y="0" width="2" height="5" fill="#ffffff"/>
+    <rect x="19" y="0" width="2" height="5" fill="#ffffff"/>
+
+    <!-- neo shades -->
+    <rect x="21" y="8" width="6" height="2" fill="#0a0a0a"/>
+
+    <!-- trenchcoat body -->
+    <rect x="11" y="12" width="11" height="8" fill="#121212"/>
+    <rect x="9" y="14" width="2" height="5" fill="#121212"/>
+    <rect x="22" y="14" width="2" height="5" fill="#121212"/>
+    <rect x="16" y="13" width="1" height="6" fill="#1f1f1f"/>
+
+    <!-- running legs (gather) -->
+    <rect x="14" y="20" width="2" height="4" fill="#121212"/>
+    <rect x="17" y="20" width="2" height="4" fill="#121212"/>
+
+    <!-- tiny white tail -->
+    <rect x="9" y="13" width="2" height="2" fill="#ffffff"/>
+  </g>
+</svg>
