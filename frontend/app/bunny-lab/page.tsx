@@ -1,17 +1,17 @@
 export default function BunnyLabPage() {
   const options = [
-    { id: 'M', src: '/gangster-bunny-v13.svg', label: 'M · Sprinter lean, high knee drive' },
-    { id: 'N', src: '/gangster-bunny-v14.svg', label: 'N · Upright jog, relaxed gait' },
-    { id: 'O', src: '/gangster-bunny-v15.svg', label: 'O · Tactical dash, compact steps' },
-    { id: 'P', src: '/gangster-bunny-v16.svg', label: 'P · Fast crossover stride' },
-    { id: 'Q', src: '/gangster-bunny-v17.svg', label: 'Q · Power run, broad torso' },
-    { id: 'R', src: '/gangster-bunny-v18.svg', label: 'R · Slow cinematic runner' },
+    { id: 'S', src: '/gangster-bunny-v13b.svg', label: 'S · Sprinter (human knee drive)' },
+    { id: 'T', src: '/gangster-bunny-v14b.svg', label: 'T · Upright jog (soft contact)' },
+    { id: 'U', src: '/gangster-bunny-v15b.svg', label: 'U · Naruto lean (long stride)' },
+    { id: 'V', src: '/gangster-bunny-v16b.svg', label: 'V · Low tactical run' },
+    { id: 'W', src: '/gangster-bunny-v17b.svg', label: 'W · Power stride (broader stance)' },
+    { id: 'X', src: '/gangster-bunny-v18b.svg', label: 'X · Cinematic slow runner' },
   ];
 
   return (
     <main className="min-h-screen bg-[#1a1a20] text-white p-8 font-mono">
-      <h1 className="text-2xl mb-2">New 6 Bunny Variants (Human-Like Leg Motion)</h1>
-      <p className="text-sm text-zinc-400 mb-8">Fresh set M–R with more human leg mechanics and smoother timing.</p>
+      <h1 className="text-2xl mb-2">Fresh 6 Variants (New Leg Mechanics)</h1>
+      <p className="text-sm text-zinc-400 mb-8">These are rebuilt from scratch with 4-frame cycles and more human leg motion.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {options.map((o) => (
           <div key={o.id} className="border border-zinc-700 rounded-lg p-4 bg-zinc-900/60">
