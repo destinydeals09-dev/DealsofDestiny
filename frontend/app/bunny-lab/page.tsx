@@ -1,17 +1,17 @@
 export default function BunnyLabPage() {
   const options = [
-    { id: 'A', src: '/gangster-bunny-v1.svg', label: 'A · Long stride (slow)' },
-    { id: 'B', src: '/gangster-bunny-v2.svg', label: 'B · Upright sprint (faster)' },
-    { id: 'C', src: '/gangster-bunny-v3.svg', label: 'C · Heavy coat billow (slowest)' },
-    { id: 'D', src: '/gangster-bunny-v4.svg', label: 'D · Compact runner' },
-    { id: 'E', src: '/gangster-bunny-v5.svg', label: 'E · Low tactical run' },
-    { id: 'F', src: '/gangster-bunny-v6.svg', label: 'F · Clean silhouette glide' },
+    { id: 'G', src: '/gangster-bunny-v7.svg', label: 'G · Human runner, balanced' },
+    { id: 'H', src: '/gangster-bunny-v8.svg', label: 'H · Upright athletic stride' },
+    { id: 'I', src: '/gangster-bunny-v9.svg', label: 'I · Low tactical lean' },
+    { id: 'J', src: '/gangster-bunny-v10.svg', label: 'J · Shoulder-forward sprint' },
+    { id: 'K', src: '/gangster-bunny-v11.svg', label: 'K · Compact human silhouette' },
+    { id: 'L', src: '/gangster-bunny-v12.svg', label: 'L · Slow cinematic run' },
   ];
 
   return (
     <main className="min-h-screen bg-[#1a1a20] text-white p-8 font-mono">
-      <h1 className="text-2xl mb-2">Bunny Body Variants (same head)</h1>
-      <p className="text-sm text-zinc-400 mb-8">Six different silhouettes, slower animation. Pick A–F.</p>
+      <h1 className="text-2xl mb-2">Fresh 6 Bunny Variants (More Human Body)</h1>
+      <p className="text-sm text-zinc-400 mb-8">These are the new six (G–L), with slower animation and cleaner human silhouettes.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {options.map((o) => (
           <div key={o.id} className="border border-zinc-700 rounded-lg p-4 bg-zinc-900/60">
