@@ -1,11 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" shape-rendering="crispEdges"><style>
-.f2,.f3,.f4{opacity:0}
-@keyframes k1{0%,24.999%{opacity:1}25%,100%{opacity:0}}
-@keyframes k2{0%,24.999%{opacity:0}25%,49.999%{opacity:1}50%,100%{opacity:0}}
-@keyframes k3{0%,49.999%{opacity:0}50%,74.999%{opacity:1}75%,100%{opacity:0}}
-@keyframes k4{0%,74.999%{opacity:0}75%,100%{opacity:1}}
-.f1{animation:k1 0.48s steps(1,end) infinite}
-.f2{animation:k2 0.48s steps(1,end) infinite}
-.f3{animation:k3 0.48s steps(1,end) infinite}
-.f4{animation:k4 0.48s steps(1,end) infinite}
-</style><g class="f1"><rect x="20" y="10" width="10" height="9" fill="#fff"/><rect x="21" y="5" width="2" height="5" fill="#fff"/><rect x="24" y="5" width="2" height="5" fill="#fff"/><rect x="22" y="13" width="8" height="2" fill="#050505"/></g><g class="f2"><rect x="20" y="9" width="10" height="9" fill="#fff"/><rect x="21" y="4" width="2" height="5" fill="#fff"/><rect x="24" y="4" width="2" height="5" fill="#fff"/><rect x="22" y="12" width="8" height="2" fill="#050505"/></g><g class="f3"><rect x="20" y="10" width="10" height="9" fill="#fff"/><rect x="21" y="5" width="2" height="5" fill="#fff"/><rect x="24" y="5" width="2" height="5" fill="#fff"/><rect x="22" y="13" width="8" height="2" fill="#050505"/></g><g class="f4"><rect x="20" y="10" width="10" height="9" fill="#fff"/><rect x="21" y="5" width="2" height="5" fill="#fff"/><rect x="24" y="5" width="2" height="5" fill="#fff"/><rect x="22" y="13" width="8" height="2" fill="#050505"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 32" shape-rendering="crispEdges">
+  <style>
+    .f2 { display: none; }
+    @keyframes run1 { 0%,49.9% { display:block; } 50%,100% { display:none; } }
+    @keyframes run2 { 0%,49.9% { display:none; } 50%,100% { display:block; } }
+    .a { animation: run1 .14s infinite; }
+    .b { animation: run2 .14s infinite; }
+  </style>
+
+  <!-- Frame 1: middle-row style stride -->
+  <g class="a">
+    <!-- Bunny head (unchanged style) -->
+    <rect x="29" y="6" width="8" height="8" fill="#ffffff"/>
+    <rect x="32" y="1" width="2" height="5" fill="#ffffff"/>
+    <rect x="29" y="1" width="2" height="5" fill="#ffffff"/>
+    <rect x="31" y="9" width="6" height="2" fill="#0a0a0a"/>
+
+    <!-- Human torso leaning forward (all black Neo fit) -->
+    <rect x="20" y="13" width="9" height="6" fill="#000000"/>
+    <rect x="18" y="14" width="2" height="4" fill="#000000"/>
+    <rect x="29" y="14" width="2" height="4" fill="#000000"/>
+
+    <!-- Arms (both back Naruto-style), right hand with gun backward -->
+    <rect x="13" y="13" width="7" height="2" fill="#000000"/>
+    <rect x="15" y="11" width="5" height="2" fill="#000000"/>
+    <rect x="11" y="13" width="2" height="1" fill="#3e3e3e"/>
+    <rect x="10" y="12" width="1" height="2" fill="#3e3e3e"/>
+
+    <!-- Long coat billow trail -->
+    <rect x="15" y="16" width="5" height="5" fill="#050505"/>
+    <rect x="12" y="17" width="3" height="3" fill="#050505"/>
+    <rect x="9" y="18" width="3" height="2" fill="#050505"/>
+
+    <!-- Running legs (extended) -->
+    <rect x="21" y="19" width="4" height="2" fill="#000000"/>
+    <rect x="18" y="21" width="3" height="2" fill="#000000"/>
+    <rect x="27" y="19" width="4" height="2" fill="#000000"/>
+    <rect x="31" y="21" width="3" height="2" fill="#000000"/>
+  </g>
+
+  <!-- Frame 2: middle-row style airborne gather -->
+  <g class="b">
+    <rect x="29" y="5" width="8" height="8" fill="#ffffff"/>
+    <rect x="32" y="0" width="2" height="5" fill="#ffffff"/>
+    <rect x="29" y="0" width="2" height="5" fill="#ffffff"/>
+    <rect x="31" y="8" width="6" height="2" fill="#0a0a0a"/>
+
+    <rect x="20" y="12" width="9" height="6" fill="#000000"/>
+    <rect x="18" y="13" width="2" height="4" fill="#000000"/>
+    <rect x="29" y="13" width="2" height="4" fill="#000000"/>
+
+    <rect x="13" y="12" width="7" height="2" fill="#000000"/>
+    <rect x="15" y="10" width="5" height="2" fill="#000000"/>
+    <rect x="11" y="12" width="2" height="1" fill="#3e3e3e"/>
+    <rect x="10" y="11" width="1" height="2" fill="#3e3e3e"/>
+
+    <rect x="15" y="15" width="5" height="5" fill="#050505"/>
+    <rect x="12" y="16" width="3" height="3" fill="#050505"/>
+    <rect x="9" y="17" width="3" height="2" fill="#050505"/>
+
+    <!-- Legs gathered / transition -->
+    <rect x="23" y="18" width="2" height="4" fill="#000000"/>
+    <rect x="26" y="18" width="2" height="4" fill="#000000"/>
+  </g>
+</svg>
