@@ -180,14 +180,14 @@ export default function Home() {
       <header className="bg-[#1b1b20]/95 backdrop-blur-md border-b border-[#2b2b31] sticky top-0 z-50">
         <div className="container mx-auto px-4 h-[112px] flex items-center justify-between">
           <div className="flex flex-col items-start justify-center leading-tight">
-            <h1 className="text-3xl leading-none font-bold italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
+            <h1 className="text-3xl leading-none font-black italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
               GRABBIT
             </h1>
             <p className="text-[12px] text-terminal-green/85 italic mt-1">before it&apos;s gone</p>
           </div>
 
           <div className="h-full flex items-end justify-end">
-            <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-[126px] w-[126px] object-contain" />
+            <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-[144px] w-[144px] object-contain" />
           </div>
         </div>
       </header>
