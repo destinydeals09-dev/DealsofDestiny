@@ -99,7 +99,7 @@ export default function Home() {
           </div>
 
           <div className="absolute right-4 top-2 bunny-nod">
-            <Image src="/bunny-head.svg" alt="Rabbit head" width={44} height={44} className="drop-shadow-[0_0_10px_rgba(57,255,20,0.45)]" />
+            <Image src="/gangster-bunny.svg" alt="Rabbit head" width={44} height={44} className="drop-shadow-[0_0_10px_rgba(57,255,20,0.45)]" />
           </div>
         </div>
       </header>
