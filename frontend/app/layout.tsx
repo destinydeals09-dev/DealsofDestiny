@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "⚡ GRABIT | Lightning-Fast Deals 50%+ OFF on $50+ Items",
-  description: "Lightning-fast deals! Quality nationwide online deals: 50%+ OFF on items $50+. Gaming, fashion, beauty, tech, home, kitchen, fitness, books, toys & more. Grab it before it's gone! Updated every 6 hours.",
-  keywords: ["deals", "discounts", "fast deals", "lightning deals", "gaming", "fashion", "beauty", "tech", "home", "kitchen", "fitness", "books", "toys", "50% off", "quality deals", "online deals", "nationwide", "grabit"],
+  title: "Grabbit | 50%+ OFF Deals on Gaming, Fashion, Beauty & Tech",
+  description: "Grab it before it's gone! Curated deals with 50%+ discounts on gaming, fashion, beauty, tech, and toys. Updated every 6 hours from Reddit, Steam, and more.",
+  keywords: ["deals", "discounts", "gaming", "fashion", "beauty", "tech", "toys", "50% off", "sales", "grabbit"],
 };
 
 export default function RootLayout({

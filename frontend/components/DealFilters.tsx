@@ -29,62 +29,95 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
     onFilterChange(newFilters);
   };
 
-  const categories = [
-    { id: '', label: 'All', emoji: '🔥' },
-    { id: 'gaming', label: 'Gaming', emoji: '🎮' },
-    { id: 'fashion', label: 'Fashion', emoji: '👗' },
-    { id: 'beauty', label: 'Beauty', emoji: '💄' },
-    { id: 'tech', label: 'Tech', emoji: '💻' },
-    { id: 'home', label: 'Home', emoji: '🏠' },
-    { id: 'kitchen', label: 'Kitchen', emoji: '🍳' },
-    { id: 'fitness', label: 'Fitness', emoji: '💪' },
-    { id: 'toys', label: 'Toys', emoji: '🧸' },
-    { id: 'books', label: 'Books', emoji: '📚' },
-  ];
-
-  const getSortLabel = () => {
-    switch (filters.sortBy) {
-      case 'newest': return 'Newest';
-      case 'quality': return 'Popular';
-      default: return 'Top Deals';
-    }
-  };
-
   return (
-    <div className="overflow-x-auto scrollbar-hide py-3">
-      <div className="flex gap-2 px-4 min-w-max">
-        {/* Sort Dropdown (First) */}
-        <div className="relative">
+    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Search */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            🔍 Search
+          </label>
+          <input
+            type="text"
+            placeholder="Search deals..."
+            value={filters.search}
+            onChange={(e) => updateFilter('search', e.target.value)}
+            className="w-full px-4 py-2 bg-black/40 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
+          />
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            📁 Category
+          </label>
+          <select
+            value={filters.category}
+            onChange={(e) => updateFilter('category', e.target.value)}
+            className="w-full px-4 py-2 bg-black/40 border border-purple-500/30 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
+          >
+            <option value="">All Categories</option>
+            <option value="gaming">🎮 Gaming</option>
+            <option value="fashion">👗 Fashion</option>
+            <option value="beauty">💄 Beauty</option>
+            <option value="tech">💻 Tech</option>
+            <option value="toys">🧸 Toys</option>
+          </select>
+        </div>
+
+        {/* Source */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            🌐 Source
+          </label>
+          <select
+            value={filters.source}
+            onChange={(e) => updateFilter('source', e.target.value)}
+            className="w-full px-4 py-2 bg-black/40 border border-purple-500/30 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
+          >
+            <option value="">All Sources</option>
+            <option value="steam">Steam</option>
+            <option value="reddit_GameDeals">r/GameDeals</option>
+            <option value="reddit_buildapcsales">r/buildapcsales</option>
+            <option value="reddit_MUAontheCheap">r/MUAontheCheap</option>
+            <option value="reddit_frugalmalefashion">r/frugalmalefashion</option>
+            <option value="reddit_frugalfemalefashion">r/frugalfemalefashion</option>
+            <option value="reddit_legodeals">r/legodeals</option>
+            <option value="slickdeals">Slickdeals</option>
+          </select>
+        </div>
+
+        {/* Sort */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            🔄 Sort By
+          </label>
           <select
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as any)}
-            className="appearance-none px-4 py-2 pr-8 rounded-full text-sm font-medium whitespace-nowrap bg-purple-500 text-white shadow-lg shadow-purple-500/50 cursor-pointer outline-none"
+            className="w-full px-4 py-2 bg-black/40 border border-purple-500/30 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
           >
-            <option value="discount">🔥 Top Deals</option>
-            <option value="newest">🆕 Newest</option>
-            <option value="quality">⭐ Popular</option>
+            <option value="discount">Highest Discount</option>
+            <option value="newest">Newest First</option>
+            <option value="quality">Highest Quality</option>
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-white">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
         </div>
-        
-        {/* Category Pills */}
-        {categories.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => updateFilter('category', cat.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150 active:scale-95 ${
-              filters.category === cat.id
-                ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/50 scale-105'
-                : 'bg-black/40 text-gray-300 border border-purple-500/20 hover:border-purple-500/50 hover:scale-105'
-            }`}
-          >
-            {cat.emoji} {cat.label}
-          </button>
-        ))}
+      </div>
+
+      {/* Discount Slider */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          💰 Minimum Discount: {filters.minDiscount}%+
+        </label>
+        <input
+          type="range"
+          min="50"
+          max="100"
+          step="5"
+          value={filters.minDiscount}
+          onChange={(e) => updateFilter('minDiscount', parseInt(e.target.value))}
+          className="w-full h-2 bg-black/40 rounded-lg appearance-none cursor-pointer accent-purple-500"
+        />
       </div>
     </div>
   );

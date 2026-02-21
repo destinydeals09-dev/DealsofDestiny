@@ -1,12 +1,27 @@
-'use client';
-
-import React from 'react';
 import type { Deal } from '@/lib/supabase';
 import Image from 'next/image';
 
 interface DealCardProps {
   deal: Deal;
 }
+
+const sourceColors: Record<string, string> = {
+  bestbuy: 'from-blue-500 to-blue-700',
+  newegg: 'from-orange-500 to-red-600',
+  steam: 'from-purple-500 to-indigo-600',
+  amazon: 'from-yellow-500 to-orange-600',
+  microcenter: 'from-red-500 to-pink-600',
+  gamestop: 'from-red-600 to-gray-800',
+  target: 'from-red-500 to-red-700',
+  walmart: 'from-blue-400 to-yellow-500',
+  bhphoto: 'from-green-500 to-teal-600',
+  sephora: 'from-black to-gray-800',
+  ulta: 'from-pink-500 to-rose-600',
+  toysrus: 'from-blue-500 to-cyan-500',
+  reddit_buildapcsales: 'from-orange-500 to-red-600',
+  reddit_GameDeals: 'from-orange-500 to-red-600',
+  slickdeals: 'from-green-500 to-emerald-600'
+};
 
 const sourceLogos: Record<string, string> = {
   bestbuy: '🛒',
@@ -35,11 +50,6 @@ const getSourceDisplay = (source: string) => {
 };
 
 export default function DealCard({ deal }: DealCardProps) {
-  const [imageError, setImageError] = React.useState(false);
-
-  // Strict image policy: no image (or broken image) => no card rendered
-  if (!deal.image_url || imageError) return null;
-
   const savings = deal.original_price
     ? (deal.original_price - deal.sale_price).toFixed(2)
     : null;
@@ -49,71 +59,67 @@ export default function DealCard({ deal }: DealCardProps) {
       href={deal.product_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block bg-surface border border-[#252529] hover:border-terminal-green hover:shadow-[0_0_20px_rgba(57,255,20,0.15)] transition-all duration-200 relative overflow-hidden"
+      className="group block bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden border border-purple-500/20 hover:border-purple-500/60 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20"
     >
-      {/* Selection/Hover Effect Overlay */}
-      <div className="absolute inset-0 bg-terminal-green/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
+      {/* Image */}
+      <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
+        {deal.image_url ? (
+          <Image
+            src={deal.image_url}
+            alt={deal.product_name}
+            fill
+            className="object-contain p-4 group-hover:scale-110 transition-transform duration-300"
+            unoptimized
+          />
+        ) : (
+          <span className="text-6xl">{sourceLogos[deal.source]}</span>
+        )}
 
-      {/* Image Area */}
-      <div className="relative h-48 bg-black/50 border-b border-[#252529] flex items-center justify-center overflow-hidden">
-        <Image
-          src={deal.image_url}
-          alt={deal.product_name}
-          fill
-          className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-          unoptimized
-          onError={() => setImageError(true)}
-        />
-
-        {/* Discount Badge - Top Right */}
+        {/* Discount Badge */}
         {deal.discount_percent && deal.discount_percent > 0 && (
-          <div className="absolute top-0 right-0 bg-terminal-green text-black font-bold font-mono text-xs px-2 py-1 border-l border-b border-black">
+          <div className="absolute top-2 right-2 bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold px-3 py-1 rounded-full text-sm shadow-lg">
             -{deal.discount_percent}%
           </div>
         )}
 
-        {/* Source Badge - Bottom Left */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/80 backdrop-blur border border-[#252529] text-muted text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider">
-          <span className="text-terminal-green">{sourceLogos[deal.source] || '>'}</span>
-          {getSourceDisplay(deal.source)}
+        {/* Source Badge */}
+        <div className={`absolute bottom-2 left-2 bg-gradient-to-r ${sourceColors[deal.source] || 'from-gray-500 to-gray-700'} text-white text-xs font-semibold px-3 py-1 rounded-full capitalize shadow-lg`}>
+          {sourceLogos[deal.source] || '🔗'} {getSourceDisplay(deal.source)}
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col h-[calc(100%-12rem)] relative z-20">
-        {/* Title */}
-        <h3 className="text-foreground font-bold text-sm leading-tight line-clamp-2 mb-3 font-mono group-hover:text-terminal-green transition-colors">
+      <div className="p-4">
+        {/* Category */}
+        {deal.category && (
+          <p className="text-purple-400 text-xs font-semibold uppercase tracking-wide mb-2">
+            {deal.category}
+          </p>
+        )}
+
+        {/* Product Name */}
+        <h3 className="text-white font-semibold text-lg line-clamp-2 group-hover:text-purple-300 transition-colors mb-3">
           {deal.product_name}
         </h3>
 
-        <div className="mt-auto">
-          {/* Category Tag */}
-          {deal.category && (
-            <div className="mb-2">
-              <span className="text-[10px] text-muted uppercase tracking-widest border border-[#252529] px-1.5 py-0.5 rounded-sm">
-                {deal.category}
+        {/* Pricing */}
+        <div className="space-y-1">
+          <div className="flex items-baseline gap-3">
+            <span className="text-2xl font-bold text-green-400">
+              ${deal.sale_price.toFixed(2)}
+            </span>
+            {deal.original_price && deal.original_price !== deal.sale_price && (
+              <span className="text-sm text-gray-500 line-through">
+                ${deal.original_price.toFixed(2)}
               </span>
-            </div>
-          )}
-
-          {/* Pricing */}
-          <div className="flex items-end justify-between border-t border-[#252529] pt-3 mt-1">
-            <div className="flex flex-col">
-              <span className="text-xs text-muted line-through decoration-red-500/50">
-                ${deal.original_price?.toFixed(2)}
-              </span>
-              <span className="text-xl font-bold text-terminal-green font-mono tracking-tight">
-                ${deal.sale_price.toFixed(2)}
-              </span>
-            </div>
-            
-            {savings && parseFloat(savings) > 0 && (
-              <div className="text-right">
-                <p className="text-[10px] text-muted uppercase tracking-wider">Saved</p>
-                <p className="text-xs font-bold text-foreground">${savings}</p>
-              </div>
             )}
           </div>
+          
+          {savings && parseFloat(savings) > 0 && (
+            <p className="text-sm text-purple-300">
+              💰 Save ${savings}
+            </p>
+          )}
         </div>
       </div>
     </a>
