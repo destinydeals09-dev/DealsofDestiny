@@ -1,17 +1,17 @@
 export default function BunnyLabPage() {
   const options = [
-    { id: 'Y', src: '/gangster-bunny-v19.svg', label: 'Y · Sprinter lean (4-frame)' },
-    { id: 'Z', src: '/gangster-bunny-v20.svg', label: 'Z · Athletic run (4-frame)' },
-    { id: 'AA', src: '/gangster-bunny-v21.svg', label: 'AA · Heavy stride (4-frame)' },
-    { id: 'AB', src: '/gangster-bunny-v22.svg', label: 'AB · Fast runner (4-frame)' },
-    { id: 'AC', src: '/gangster-bunny-v23.svg', label: 'AC · Long coat sprint (4-frame)' },
-    { id: 'AD', src: '/gangster-bunny-v24.svg', label: 'AD · Slow cinematic jog (4-frame)' },
+    { id: 'AE', src: '/gangster-bunny-v25.svg', label: 'AE · Blade sprint' },
+    { id: 'AF', src: '/gangster-bunny-v26.svg', label: 'AF · Parkour stride' },
+    { id: 'AG', src: '/gangster-bunny-v27.svg', label: 'AG · Long-coat runner' },
+    { id: 'AH', src: '/gangster-bunny-v28.svg', label: 'AH · Tactical dash' },
+    { id: 'AI', src: '/gangster-bunny-v29.svg', label: 'AI · Power sprint' },
+    { id: 'AJ', src: '/gangster-bunny-v30.svg', label: 'AJ · Smooth fast run' },
   ];
 
   return (
     <main className="min-h-screen bg-[#1a1a20] text-white p-8 font-mono">
-      <h1 className="text-2xl mb-2">New 6 Variants (Rebuilt Human Leg Motion)</h1>
-      <p className="text-sm text-zinc-400 mb-8">Ground-up rebuild with 4 key poses: contact, recoil, passing, extension.</p>
+      <h1 className="text-2xl mb-2">Fresh Reset Set (AE–AJ)</h1>
+      <p className="text-sm text-zinc-400 mb-8">Totally new from-scratch pass: white bunny head + shades + black trench coat + fast run.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {options.map((o) => (
           <div key={o.id} className="border border-zinc-700 rounded-lg p-4 bg-zinc-900/60">
