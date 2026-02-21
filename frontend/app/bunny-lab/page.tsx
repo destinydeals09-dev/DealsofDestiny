@@ -1,17 +1,17 @@
 export default function BunnyLabPage() {
   const options = [
-    { id: 'AE', src: '/gangster-bunny-v25.svg', label: 'AE · Blade sprint' },
-    { id: 'AF', src: '/gangster-bunny-v26.svg', label: 'AF · Parkour stride' },
-    { id: 'AG', src: '/gangster-bunny-v27.svg', label: 'AG · Long-coat runner' },
-    { id: 'AH', src: '/gangster-bunny-v28.svg', label: 'AH · Tactical dash' },
-    { id: 'AI', src: '/gangster-bunny-v29.svg', label: 'AI · Power sprint' },
-    { id: 'AJ', src: '/gangster-bunny-v30.svg', label: 'AJ · Smooth fast run' },
+    { id: 'AK', src: '/gangster-bunny-v31.svg', label: 'AK · Ultra-lean ninja' },
+    { id: 'AL', src: '/gangster-bunny-v32.svg', label: 'AL · Bulky trench brute' },
+    { id: 'AM', src: '/gangster-bunny-v33.svg', label: 'AM · Upright sprinter' },
+    { id: 'AN', src: '/gangster-bunny-v34.svg', label: 'AN · Low crouch dash' },
+    { id: 'AO', src: '/gangster-bunny-v35.svg', label: 'AO · Long-coat streamer' },
+    { id: 'AP', src: '/gangster-bunny-v36.svg', label: 'AP · Compact tactical run' },
   ];
 
   return (
     <main className="min-h-screen bg-[#1a1a20] text-white p-8 font-mono">
-      <h1 className="text-2xl mb-2">Fresh Reset Set (AE–AJ)</h1>
-      <p className="text-sm text-zinc-400 mb-8">Totally new from-scratch pass: white bunny head + shades + black trench coat + fast run.</p>
+      <h1 className="text-2xl mb-2">Very Different Silhouette Set (AK–AP)</h1>
+      <p className="text-sm text-zinc-400 mb-8">Deliberately varied body types and run styles. Pick one base and I’ll polish final.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {options.map((o) => (
           <div key={o.id} className="border border-zinc-700 rounded-lg p-4 bg-zinc-900/60">
