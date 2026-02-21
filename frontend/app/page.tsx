@@ -178,22 +178,22 @@ export default function Home() {
     <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono">
       {/* Header - Terminal Style */}
       <header className="bg-[#1b1b20]/95 backdrop-blur-md border-b border-[#2b2b31] sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-[104px] flex items-center justify-between">
+        <div className="container mx-auto px-4 h-[128px] flex items-center justify-between">
           <div className="flex flex-col items-start justify-center leading-tight">
-            <h1 className="text-3xl leading-none font-black tracking-[0.22em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-300 drop-shadow-[0_0_14px_rgba(57,255,20,0.6)]" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+            <h1 className="text-3xl leading-none font-bold italic tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-terminal-green to-emerald-400 drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
               GRABBIT
             </h1>
             <p className="text-[12px] text-terminal-green/85 italic mt-1">before it&apos;s gone</p>
           </div>
 
           <div className="h-full flex items-end justify-end">
-            <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-[94px] w-[94px] object-contain" />
+            <img src="/gangster-bunny.svg" alt="Gangster Bunny" className="h-[117px] w-[117px] object-contain" />
           </div>
         </div>
       </header>
 
       {/* Filter Bar */}
-      <div className="sticky top-[104px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
+      <div className="sticky top-[128px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
         <DealFilters onFilterChange={handleFilterChange} />
       </div>
 
