@@ -1,3 +1,6 @@
+'use client';
+
+import React from 'react';
 import type { Deal } from '@/lib/supabase';
 import Image from 'next/image';
 
@@ -49,7 +52,73 @@ const getSourceDisplay = (source: string) => {
   return source;
 };
 
+// Helper to get category icon for placeholder
+const getCategoryIcon = (deal: Deal) => {
+  const source = deal.source.toLowerCase();
+  const name = deal.product_name.toLowerCase();
+  const category = deal.category?.toLowerCase() || '';
+  
+  // Gaming
+  if (source.includes('game') || source.includes('steam') || 
+      name.includes('game') || category.includes('game')) {
+    return '🎮';
+  }
+  
+  // Fashion
+  if (source.includes('fashion') || source.includes('sneaker') ||
+      name.includes('shirt') || name.includes('jacket') || name.includes('shoe')) {
+    return '👗';
+  }
+  
+  // Beauty
+  if (source.includes('mua') || source.includes('beauty') || source.includes('sephora') ||
+      name.includes('makeup') || name.includes('beauty')) {
+    return '💄';
+  }
+  
+  // Tech
+  if (source.includes('buildapcsales') || name.includes('pc') || 
+      name.includes('monitor') || name.includes('keyboard') || category.includes('tech')) {
+    return '💻';
+  }
+  
+  // Home & Furniture
+  if (source.includes('furniture') || source.includes('homedecor') ||
+      name.includes('furniture') || name.includes('home') || name.includes('decor')) {
+    return '🏠';
+  }
+  
+  // Kitchen & Cooking
+  if (source.includes('cooking') || name.includes('kitchen') || 
+      name.includes('cook') || name.includes('appliance')) {
+    return '🍳';
+  }
+  
+  // Fitness
+  if (source.includes('fitness') || name.includes('fitness') || 
+      name.includes('gym') || name.includes('exercise')) {
+    return '💪';
+  }
+  
+  // Books
+  if (source.includes('book') || source.includes('ebook') || 
+      name.includes('book')) {
+    return '📚';
+  }
+  
+  // Toys
+  if (source.includes('lego') || source.includes('toy') || source.includes('boardgame') ||
+      name.includes('lego') || name.includes('toy')) {
+    return '🧸';
+  }
+  
+  // Default
+  return '🔥';
+};
+
 export default function DealCard({ deal }: DealCardProps) {
+  const [imageError, setImageError] = React.useState(false);
+  
   const savings = deal.original_price
     ? (deal.original_price - deal.sale_price).toFixed(2)
     : null;
@@ -59,20 +128,23 @@ export default function DealCard({ deal }: DealCardProps) {
       href={deal.product_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden border border-purple-500/20 hover:border-purple-500/60 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20"
+      className="group block bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden border border-purple-500/20 hover:border-purple-500/60 hover:scale-[1.03] transition-all duration-150 hover:shadow-2xl hover:shadow-purple-500/30 active:scale-[0.98]"
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
-        {deal.image_url ? (
+        {deal.image_url && !imageError ? (
           <Image
             src={deal.image_url}
             alt={deal.product_name}
             fill
             className="object-contain p-4 group-hover:scale-110 transition-transform duration-300"
             unoptimized
+            onError={() => setImageError(true)}
           />
         ) : (
-          <span className="text-6xl">{sourceLogos[deal.source]}</span>
+          <div className="text-9xl opacity-30 group-hover:scale-110 transition-transform duration-300">
+            {getCategoryIcon(deal)}
+          </div>
         )}
 
         {/* Discount Badge */}

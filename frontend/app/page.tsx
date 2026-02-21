@@ -19,8 +19,57 @@ export default function Home() {
         .limit(200);
 
       if (!error && data) {
-        setAllDeals(data);
-        setFilteredDeals(data);
+        // Filter out expired deals, cheap items, location-specific deals, AND Reddit links
+        const qualityDeals = data.filter(deal => {
+          // Check if expired
+          const isExpired = deal.category?.toLowerCase().includes('expired') ||
+                           deal.product_name?.toLowerCase().includes('expired') ||
+                           (deal.expires_at && new Date(deal.expires_at) < new Date());
+          if (isExpired) return false;
+          
+          // Skip deals that link to Reddit (old data)
+          if (deal.product_url?.includes('reddit.com') || deal.product_url?.includes('redd.it')) {
+            return false;
+          }
+          
+          // Check if location-specific or in-store only
+          const text = `${deal.product_name} ${deal.category || ''}`.toLowerCase();
+          const locationKeywords = [
+            // US States
+            'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut',
+            'delaware', 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa',
+            'kansas', 'kentucky', 'louisiana', 'maine', 'maryland', 'massachusetts', 'michigan',
+            'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska', 'nevada', 'new hampshire',
+            'new jersey', 'new mexico', 'new york', 'north carolina', 'north dakota', 'ohio',
+            'oklahoma', 'oregon', 'pennsylvania', 'rhode island', 'south carolina', 'south dakota',
+            'tennessee', 'texas', 'utah', 'vermont', 'virginia', 'washington', 'west virginia',
+            'wisconsin', 'wyoming',
+            // Cities (major ones)
+            'atlanta', 'boston', 'chicago', 'dallas', 'denver', 'houston', 'los angeles', 'miami',
+            'new york city', 'nyc', 'philadelphia', 'phoenix', 'san francisco', 'seattle',
+            // Location indicators
+            'in-store', 'in store', 'local', 'ymmv', 'costco ', 'walmart ', 'target '
+          ];
+          
+          const isLocationSpecific = locationKeywords.some(keyword => text.includes(keyword));
+          if (isLocationSpecific) return false;
+          
+          // Calculate original price if missing
+          let originalPrice = deal.original_price;
+          if (!originalPrice && deal.sale_price && deal.discount_percent) {
+            // Formula: original = sale / (1 - discount/100)
+            // Example: $25 at 50% off = $25 / 0.5 = $50 original
+            originalPrice = deal.sale_price / (1 - deal.discount_percent / 100);
+          }
+          
+          // Only show items originally $50+
+          return originalPrice && originalPrice >= 50;
+        });
+        
+        // Auto-sort by discount % (high to low)
+        const sorted = [...qualityDeals].sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
+        setAllDeals(sorted);
+        setFilteredDeals(sorted);
       }
       setLoading(false);
     }
@@ -43,7 +92,7 @@ export default function Home() {
       );
     }
 
-    // Category filter (basic - maps common keywords)
+    // Category filter (expanded for all categories)
     if (filters.category) {
       filtered = filtered.filter(deal => {
         const name = deal.product_name.toLowerCase();
@@ -58,8 +107,16 @@ export default function Home() {
             return source.includes('mua') || source.includes('beauty');
           case 'tech':
             return source.includes('buildapcsales') || name.includes('pc') || name.includes('monitor');
+          case 'home':
+            return source.includes('furniture') || source.includes('homedecor') || name.includes('furniture') || name.includes('home');
+          case 'kitchen':
+            return source.includes('cooking') || name.includes('kitchen') || name.includes('cook');
+          case 'fitness':
+            return source.includes('fitness') || name.includes('fitness') || name.includes('gym');
           case 'toys':
-            return source.includes('lego') || source.includes('toy');
+            return source.includes('lego') || source.includes('toy') || source.includes('boardgame');
+          case 'books':
+            return source.includes('book') || source.includes('ebook') || name.includes('book');
           default:
             return true;
         }
@@ -99,53 +156,27 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
-      <header className="bg-black/30 backdrop-blur-sm border-b border-purple-500/20 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-            ⚡ Grabbit
-          </h1>
-          <p className="text-gray-300 mt-2 text-lg">
-            Grab it before it's gone! Only 50%+ OFF deals • Updated every 6 hours
-          </p>
+      <header className="bg-black/30 backdrop-blur-sm border-b border-purple-500/20">
+        <div className="container mx-auto px-4 py-6 text-center relative">
+          {/* Lightning bolt background */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+            <span className="text-[200px] leading-none">⚡</span>
+          </div>
+          
+          {/* Content */}
+          <div className="relative z-10">
+            <h1 className="text-5xl font-bold italic text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 tracking-tight">
+              GRABIT
+            </h1>
+            <p className="text-gray-300 mt-2 text-lg">
+              ⚡ Lightning-fast deals • 50%+ OFF • $50+ items • Updated every 6 hours
+            </p>
+          </div>
         </div>
       </header>
 
-      {/* Stats Bar */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-purple-400">{allDeals.length}</p>
-              <p className="text-gray-400 text-sm">Total Deals</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-pink-400">
-                {deals.length > 0 ? Math.max(...deals.map(d => d.discount_percent ?? 0)) : 0}%
-              </p>
-              <p className="text-gray-400 text-sm">Best Discount</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-400">
-                {allDeals.filter(d => d.source.startsWith('reddit_')).length}
-              </p>
-              <p className="text-gray-400 text-sm">Reddit Deals</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-400">
-                {allDeals.filter(d => d.discount_percent && d.discount_percent >= 75).length}
-              </p>
-              <p className="text-gray-400 text-sm">75%+ OFF</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-orange-400">{deals.length}</p>
-              <p className="text-gray-400 text-sm">Showing</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="container mx-auto px-4 py-6">
+      {/* Sticky Filter Carousel */}
+      <div className="sticky top-0 z-10 bg-black/30 backdrop-blur-sm border-b border-purple-500/20">
         <DealFilters onFilterChange={handleFilterChange} />
       </div>
 
@@ -154,7 +185,7 @@ export default function Home() {
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-            <p className="text-xl text-gray-400 mt-4">Loading deals...</p>
+            <p className="text-xl text-gray-400 mt-4">⚡ Loading lightning-fast deals...</p>
           </div>
         ) : deals.length === 0 ? (
           <div className="text-center py-20">
@@ -167,7 +198,7 @@ export default function Home() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-3 md:gap-6">
             {deals.map((deal) => (
               <DealCard key={deal.id} deal={deal} />
             ))}
@@ -178,10 +209,11 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-black/30 backdrop-blur-sm border-t border-purple-500/20 mt-20">
         <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
-          <p className="text-lg font-semibold text-purple-400">⚡ grabbit.gg</p>
-          <p className="mt-2">Grab it before it's gone! Updated every 6 hours</p>
-          <p className="mt-2">Gaming • Fashion • Beauty • Tech • Toys</p>
-          <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF deals shown 🔥</p>
+          <p className="text-lg font-bold italic text-purple-400">⚡ GRABIT</p>
+          <p className="mt-2">⚡ Lightning-fast deals • Nationwide online only</p>
+          <p className="mt-2">Gaming • Fashion • Beauty • Tech • Home • Kitchen • Fitness • Books • Toys</p>
+          <p className="mt-1 text-purple-400 font-semibold">Only 50%+ OFF on $50+ items 🔥</p>
+          <p className="mt-1 text-xs text-gray-500">Quality deals • Updated every 6 hours</p>
           <p className="mt-3 text-xs">Built by E & Dezi 📊</p>
         </div>
       </footer>
