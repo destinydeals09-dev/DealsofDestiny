@@ -30,59 +30,45 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
   };
 
   const categories = [
-    { id: '', label: 'All', emoji: '🔥' },
-    { id: 'gaming', label: 'Gaming', emoji: '🎮' },
-    { id: 'fashion', label: 'Fashion', emoji: '👗' },
-    { id: 'beauty', label: 'Beauty', emoji: '💄' },
-    { id: 'tech', label: 'Tech', emoji: '💻' },
-    { id: 'home', label: 'Home', emoji: '🏠' },
-    { id: 'kitchen', label: 'Kitchen', emoji: '🍳' },
-    { id: 'fitness', label: 'Fitness', emoji: '💪' },
-    { id: 'toys', label: 'Toys', emoji: '🧸' },
-    { id: 'books', label: 'Books', emoji: '📚' },
+    { id: '', label: 'ALL_SYSTEMS' },
+    { id: 'gaming', label: 'GAMING' },
+    { id: 'fashion', label: 'FASHION' },
+    { id: 'beauty', label: 'BEAUTY' },
+    { id: 'tech', label: 'TECH' },
+    { id: 'home', label: 'HOME' },
+    { id: 'kitchen', label: 'KITCHEN' },
+    { id: 'fitness', label: 'FITNESS' },
+    { id: 'toys', label: 'TOYS' },
+    { id: 'books', label: 'BOOKS' },
   ];
 
-  const getSortLabel = () => {
-    switch (filters.sortBy) {
-      case 'newest': return 'Newest';
-      case 'quality': return 'Popular';
-      default: return 'Top Deals';
-    }
-  };
-
   return (
-    <div className="overflow-x-auto scrollbar-hide py-3">
+    <div className="overflow-x-auto scrollbar-hide py-3 font-mono">
       <div className="flex gap-2 px-4 min-w-max">
-        {/* Sort Dropdown (First) */}
-        <div className="relative">
+        <div className="relative group">
           <select
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as any)}
-            className="appearance-none px-4 py-2 pr-8 rounded-full text-sm font-medium whitespace-nowrap bg-purple-500 text-white shadow-lg shadow-purple-500/50 cursor-pointer outline-none"
+            className="appearance-none pl-3 pr-8 py-1.5 rounded text-xs font-bold whitespace-nowrap bg-surface border border-[#252529] text-terminal-green cursor-pointer outline-none hover:border-terminal-green focus:ring-1 focus:ring-terminal-green transition-colors uppercase tracking-wider"
           >
-            <option value="discount">🔥 Top Deals</option>
-            <option value="newest">🆕 Newest</option>
-            <option value="quality">⭐ Popular</option>
+            <option value="discount">SORT: TOP_DEALS</option>
+            <option value="newest">SORT: NEWEST</option>
+            <option value="quality">SORT: POPULAR</option>
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-white">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-terminal-green">▾</div>
         </div>
-        
-        {/* Category Pills */}
+
         {categories.map(cat => (
           <button
             key={cat.id}
             onClick={() => updateFilter('category', cat.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150 active:scale-95 ${
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-all duration-150 uppercase tracking-wide border ${
               filters.category === cat.id
-                ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/50 scale-105'
-                : 'bg-black/40 text-gray-300 border border-purple-500/20 hover:border-purple-500/50 hover:scale-105'
+                ? 'bg-terminal-green text-black border-terminal-green shadow-[0_0_10px_rgba(57,255,20,0.35)]'
+                : 'bg-surface text-muted border-[#252529] hover:text-terminal-green hover:border-terminal-green/50'
             }`}
           >
-            {cat.emoji} {cat.label}
+            {cat.label}
           </button>
         ))}
       </div>

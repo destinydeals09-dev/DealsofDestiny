@@ -1,24 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  
-  --color-background: #1a1a20;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --color-background: #0a0a0c;
   --color-surface: #111114;
   --color-surface-alt: #161619;
-  --color-terminal-green: #39ff14;
-  --color-terminal-amber: #ffb000;
+  --color-border: #252529;
   --color-muted: #6b6b76;
   --color-foreground: #e8e8ed;
+  --color-terminal-green: #39ff14;
+  --color-terminal-amber: #ffb000;
 }
 
 :root {
-  --background: #1a1a20;
+  --background: #0a0a0c;
   --foreground: #e8e8ed;
-  --terminal-green: #39ff14;
 }
 
+html { scroll-behavior: smooth; }
 body {
   background: var(--background);
   color: var(--foreground);
@@ -26,63 +27,44 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Utilities from Tinkerer */
-@utility scanlines {
+::selection {
+  background-color: var(--color-terminal-green);
+  color: var(--color-background);
+}
+
+.scanlines {
   pointer-events: none;
-  z-index: 10;
-  opacity: 0.15;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.2) 2px,
-    rgba(0, 0, 0, 0.2) 4px
-  );
+  z-index: 1;
+  opacity: 0.28;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.15) 2px 4px);
   position: fixed;
   inset: 0;
 }
 
-@utility crt-overlay {
+.crt-overlay {
   pointer-events: none;
   z-index: 9999;
-  background: radial-gradient(
-    circle,
-    rgba(18, 16, 16, 0) 50%,
-    rgba(0, 0, 0, 0.25) 100%
-  ),
-  repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 4px
-  );
   position: fixed;
   inset: 0;
+  background: radial-gradient(circle, rgba(18,16,16,0) 55%, rgba(0,0,0,.25) 100%);
 }
 
-@utility glow-green {
-  text-shadow: 0 0 10px var(--terminal-green), 0 0 20px rgba(57, 255, 20, 0.5);
+.glow-green {
+  text-shadow: 0 0 10px var(--color-terminal-green), 0 0 20px rgba(57,255,20,.25);
 }
 
-@utility glow-box-green {
-  box-shadow: 0 0 20px rgba(57, 255, 20, 0.15), inset 0 0 20px rgba(57, 255, 20, 0.05);
-  border: 1px solid var(--terminal-green);
+.bunny-nod {
+  animation: bunnyNod 4s ease-in-out infinite;
+  transform-origin: 65% 60%;
 }
 
-@utility terminal-window {
-  border-radius: 0.5rem;
-  background: var(--background);
-  border: 1px solid #252529;
-  overflow: hidden;
+@keyframes bunnyNod {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
 }
 
-/* Hide scrollbar for horizontal carousel */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
