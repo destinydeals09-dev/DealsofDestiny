@@ -10,7 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:db": "node database/test-connection.js",
-    "scrape": "node scraper/index.js"
+    "scrape": "node scraper/index.js",
+    "coverage:ensure": "node scraper/ensureCategoryCoverage.js"
   },
   "repository": {
     "type": "git",
