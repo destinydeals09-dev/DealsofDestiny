@@ -1,65 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 32" shape-rendering="crispEdges">
-  <style>
-    .f2 { display: none; }
-    @keyframes run1 { 0%,49.9% { display:block; } 50%,100% { display:none; } }
-    @keyframes run2 { 0%,49.9% { display:none; } 50%,100% { display:block; } }
-    .a { animation: run1 .14s infinite; }
-    .b { animation: run2 .14s infinite; }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" shape-rendering="crispEdges">
+  <!-- Pixel art: white rabbit head with sunglasses -->
 
-  <!-- Frame 1: middle-row style stride -->
-  <g class="a">
-    <!-- Bunny head (unchanged style) -->
-    <rect x="29" y="6" width="8" height="8" fill="#ffffff"/>
-    <rect x="32" y="1" width="2" height="5" fill="#ffffff"/>
-    <rect x="29" y="1" width="2" height="5" fill="#ffffff"/>
-    <rect x="31" y="9" width="6" height="2" fill="#0a0a0a"/>
+  <!-- Ears -->
+  <rect x="12" y="2" width="6" height="12" fill="#ffffff"/>
+  <rect x="26" y="2" width="6" height="12" fill="#ffffff"/>
 
-    <!-- Human torso leaning forward (all black Neo fit) -->
-    <rect x="20" y="13" width="9" height="6" fill="#000000"/>
-    <rect x="18" y="14" width="2" height="4" fill="#000000"/>
-    <rect x="29" y="14" width="2" height="4" fill="#000000"/>
+  <!-- Head -->
+  <rect x="8" y="12" width="28" height="24" fill="#ffffff"/>
 
-    <!-- Arms (both back Naruto-style), right hand with gun backward -->
-    <rect x="13" y="13" width="7" height="2" fill="#000000"/>
-    <rect x="15" y="11" width="5" height="2" fill="#000000"/>
-    <rect x="11" y="13" width="2" height="1" fill="#3e3e3e"/>
-    <rect x="10" y="12" width="1" height="2" fill="#3e3e3e"/>
+  <!-- Sunglasses frame -->
+  <rect x="10" y="18" width="24" height="2" fill="#0a0a0a"/>
+  <rect x="10" y="20" width="10" height="6" fill="#0a0a0a"/>
+  <rect x="24" y="20" width="10" height="6" fill="#0a0a0a"/>
+  <rect x="20" y="21" width="4" height="2" fill="#0a0a0a"/>
 
-    <!-- Long coat billow trail -->
-    <rect x="15" y="16" width="5" height="5" fill="#050505"/>
-    <rect x="12" y="17" width="3" height="3" fill="#050505"/>
-    <rect x="9" y="18" width="3" height="2" fill="#050505"/>
+  <!-- Nose + mouth -->
+  <rect x="21" y="28" width="2" height="2" fill="#0a0a0a"/>
+  <rect x="19" y="30" width="2" height="2" fill="#0a0a0a"/>
+  <rect x="23" y="30" width="2" height="2" fill="#0a0a0a"/>
 
-    <!-- Running legs (extended) -->
-    <rect x="21" y="19" width="4" height="2" fill="#000000"/>
-    <rect x="18" y="21" width="3" height="2" fill="#000000"/>
-    <rect x="27" y="19" width="4" height="2" fill="#000000"/>
-    <rect x="31" y="21" width="3" height="2" fill="#000000"/>
-  </g>
-
-  <!-- Frame 2: middle-row style airborne gather -->
-  <g class="b">
-    <rect x="29" y="5" width="8" height="8" fill="#ffffff"/>
-    <rect x="32" y="0" width="2" height="5" fill="#ffffff"/>
-    <rect x="29" y="0" width="2" height="5" fill="#ffffff"/>
-    <rect x="31" y="8" width="6" height="2" fill="#0a0a0a"/>
-
-    <rect x="20" y="12" width="9" height="6" fill="#000000"/>
-    <rect x="18" y="13" width="2" height="4" fill="#000000"/>
-    <rect x="29" y="13" width="2" height="4" fill="#000000"/>
-
-    <rect x="13" y="12" width="7" height="2" fill="#000000"/>
-    <rect x="15" y="10" width="5" height="2" fill="#000000"/>
-    <rect x="11" y="12" width="2" height="1" fill="#3e3e3e"/>
-    <rect x="10" y="11" width="1" height="2" fill="#3e3e3e"/>
-
-    <rect x="15" y="15" width="5" height="5" fill="#050505"/>
-    <rect x="12" y="16" width="3" height="3" fill="#050505"/>
-    <rect x="9" y="17" width="3" height="2" fill="#050505"/>
-
-    <!-- Legs gathered / transition -->
-    <rect x="23" y="18" width="2" height="4" fill="#000000"/>
-    <rect x="26" y="18" width="2" height="4" fill="#000000"/>
-  </g>
+  <!-- Jaw/chin definition -->
+  <rect x="14" y="34" width="16" height="2" fill="#f2f2f2"/>
 </svg>
