@@ -94,11 +94,10 @@ export default function Home() {
       <header className="bg-surface/80 backdrop-blur-md border-b border-[#252529] sticky top-0 z-50">
         <div className="container mx-auto px-4 h-[58px] flex items-center justify-between relative">
           <div className="flex items-center gap-2">
-            <span className="text-terminal-green text-xl glow-green">$</span>
             <h1 className="text-2xl font-bold tracking-tight text-terminal-green glow-green">GRABBIT.GG</h1>
           </div>
 
-          <div className="absolute right-4 top-2 bunny-nod">
+          <div className="absolute right-4 inset-y-0 flex items-center bunny-nod">
             <Image src="/rabbit-head-v1.svg" alt="Rabbit head" width={36} height={36} />
           </div>
         </div>
