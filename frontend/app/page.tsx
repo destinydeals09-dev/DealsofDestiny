@@ -14,7 +14,7 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchDeals() {
-      const { data, error } = await supabase.from('deep_discount_deals').select('*').limit(200);
+      const { data, error } = await supabase.from('hot_deals').select('*').limit(500);
 
       if (!error && data) {
         const qualityDeals = data.filter(deal => {
@@ -93,8 +93,12 @@ export default function Home() {
 
       <header className="bg-surface/80 backdrop-blur-md border-b border-[#252529] sticky top-0 z-50">
         <div className="container mx-auto px-4 h-[58px] flex items-center justify-between relative">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <h1 className="text-2xl font-thin italic tracking-tight text-terminal-green glow-green">GRABBIT</h1>
+            <div className="flex flex-col text-[10px] leading-[1.1] text-terminal-green font-thin">
+              <span>the internet's best deals</span>
+              <span>grab them before they're gone.</span>
+            </div>
           </div>
 
           <div className="absolute right-4 inset-y-0 flex items-center bunny-nod">
