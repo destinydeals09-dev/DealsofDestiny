@@ -26,6 +26,19 @@ A tech-forward platform that scrapes and aggregates top electronics and gaming d
 /docs          - Architecture, planning, decisions
 ```
 
+## AI Context (new)
+To improve agent quality and consistency (inspired by context-first AI workflows), use:
+
+- `docs/AI_CONTEXT/about-project.md`
+- `docs/AI_CONTEXT/brand-voice.md`
+- `docs/AI_CONTEXT/working-style.md`
+- `docs/AI_CONTEXT/task-intake-template.md`
+
+Recommended workflow for AI-assisted tasks:
+1. Load the three context files first
+2. Use the task intake template for ambiguous requests
+3. Validate with build/test/QA before shipping
+
 ## Getting Started
 Coming soon...
 
