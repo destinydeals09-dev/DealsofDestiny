@@ -7,6 +7,36 @@ import DealCard from '@/components/DealCard';
 import DealFilters, { FilterState } from '@/components/DealFilters';
 import type { Deal } from '@/lib/supabase';
 
+const TARGET_CATEGORIES = ['fashion', 'beauty', 'tech', 'home', 'kitchen', 'fitness', 'toys', 'books'] as const;
+const TARGET_CATEGORY_SET = new Set<string>(TARGET_CATEGORIES);
+
+const normalizeCategory = (category: string | null | undefined) => (category || '').trim().toLowerCase();
+
+const getOriginalPrice = (deal: Deal) => {
+  if (deal.original_price) return deal.original_price;
+  if (deal.sale_price && deal.discount_percent) {
+    const ratio = 1 - deal.discount_percent / 100;
+    if (ratio > 0) return deal.sale_price / ratio;
+  }
+  return null;
+};
+
+const getDealPriority = (deal: Deal) => {
+  const originalPrice = getOriginalPrice(deal) ?? 0;
+  const discountPercent = deal.discount_percent ?? 0;
+  const savings = originalPrice * (discountPercent / 100);
+  return { savings, originalPrice, discountPercent };
+};
+
+const compareDeals = (a: Deal, b: Deal) => {
+  const pa = getDealPriority(a);
+  const pb = getDealPriority(b);
+
+  if (pb.savings !== pa.savings) return pb.savings - pa.savings;
+  if (pb.originalPrice !== pa.originalPrice) return pb.originalPrice - pa.originalPrice;
+  return pb.discountPercent - pa.discountPercent;
+};
+
 export default function Home() {
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
@@ -28,14 +58,22 @@ export default function Home() {
           const locationKeywords = ['in-store', 'in store', 'local', 'ymmv', 'new york', 'los angeles', 'seattle'];
           if (locationKeywords.some(k => text.includes(k))) return false;
 
-          let originalPrice = deal.original_price;
-          if (!originalPrice && deal.sale_price && deal.discount_percent) {
-            originalPrice = deal.sale_price / (1 - deal.discount_percent / 100);
-          }
+          const category = normalizeCategory(deal.category);
+          if (!TARGET_CATEGORY_SET.has(category)) return false;
+
+          const originalPrice = getOriginalPrice(deal);
           return !!originalPrice && originalPrice >= 50;
         });
 
-        const sorted = [...qualityDeals].sort((a, b) => (b.discount_percent ?? 0) - (a.discount_percent ?? 0));
+        const topDealsByCategory = TARGET_CATEGORIES.flatMap(category => {
+          const dealsInCategory = qualityDeals
+            .filter(deal => normalizeCategory(deal.category) === category)
+            .sort(compareDeals)
+            .slice(0, 10);
+          return dealsInCategory;
+        });
+
+        const sorted = [...topDealsByCategory].sort(compareDeals);
         setAllDeals(sorted);
         setFilteredDeals(sorted);
       }
