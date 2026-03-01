@@ -12,6 +12,28 @@ const TARGET_CATEGORY_SET = new Set<string>(TARGET_CATEGORIES);
 
 const normalizeCategory = (category: string | null | undefined) => (category || '').trim().toLowerCase();
 
+const normalizeProductUrl = (rawUrl: string | null | undefined) => {
+  if (!rawUrl) return '';
+
+  try {
+    const url = new URL(rawUrl);
+
+    if (url.hostname.includes('walmart.com') && url.pathname.includes('/ip/seort/')) {
+      url.pathname = url.pathname.replace('/ip/seort/', '/ip/');
+    }
+
+    [
+      'clickid', 'irgwc', 'afsrc', 'sourceid', 'veh',
+      'wmlspartner', 'affiliates_ad_id', 'campaign_id', 'sharedid',
+      'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
+    ].forEach(param => url.searchParams.delete(param));
+
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
+};
+
 const getOriginalPrice = (deal: Deal) => {
   if (deal.original_price) return deal.original_price;
   if (deal.sale_price && deal.discount_percent) {
@@ -40,6 +62,7 @@ const compareDeals = (a: Deal, b: Deal) => {
 export default function Home() {
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,14 +89,30 @@ export default function Home() {
         });
 
         const topDealsByCategory = TARGET_CATEGORIES.flatMap(category => {
-          const dealsInCategory = qualityDeals
+          const seenUrls = new Set<string>();
+
+          const dedupedDealsInCategory = qualityDeals
             .filter(deal => normalizeCategory(deal.category) === category)
             .sort(compareDeals)
-            .slice(0, 10);
-          return dealsInCategory;
+            .filter(deal => {
+              const normalizedUrl = normalizeProductUrl(deal.product_url);
+              if (!normalizedUrl || seenUrls.has(normalizedUrl)) return false;
+              seenUrls.add(normalizedUrl);
+              return true;
+            });
+
+          // Hard requirement: category only displays if it can provide exactly 10 unique deals.
+          if (dedupedDealsInCategory.length < 10) return [];
+
+          return dedupedDealsInCategory.slice(0, 10);
         });
 
+        const liveCategories = TARGET_CATEGORIES.filter(category =>
+          topDealsByCategory.filter(d => normalizeCategory(d.category) === category).length === 10
+        );
+
         const sorted = [...topDealsByCategory].sort(compareDeals);
+        setAvailableCategories(liveCategories);
         setAllDeals(sorted);
         setFilteredDeals(sorted);
       }
@@ -94,22 +133,7 @@ export default function Home() {
     }
 
     if (filters.category) {
-      filtered = filtered.filter(deal => {
-        const name = deal.product_name.toLowerCase();
-        const source = deal.source.toLowerCase();
-        switch (filters.category) {
-          case 'gaming': return source.includes('game') || source.includes('steam') || name.includes('game');
-          case 'fashion': return source.includes('fashion') || source.includes('sneaker');
-          case 'beauty': return source.includes('mua') || source.includes('beauty');
-          case 'tech': return source.includes('buildapcsales') || name.includes('pc') || name.includes('monitor');
-          case 'home': return source.includes('furniture') || source.includes('homedecor') || name.includes('furniture') || name.includes('home');
-          case 'kitchen': return source.includes('cooking') || name.includes('kitchen') || name.includes('cook');
-          case 'fitness': return source.includes('fitness') || name.includes('fitness') || name.includes('gym');
-          case 'toys': return source.includes('lego') || source.includes('toy') || source.includes('boardgame');
-          case 'books': return source.includes('book') || source.includes('ebook') || name.includes('book');
-          default: return true;
-        }
-      });
+      filtered = filtered.filter(deal => normalizeCategory(deal.category) === filters.category);
     }
 
     if (filters.source) filtered = filtered.filter(deal => deal.source === filters.source);
@@ -146,7 +170,13 @@ export default function Home() {
       </header>
 
       <div className="sticky top-[58px] z-40 bg-surface/90 backdrop-blur-md border-b border-[#252529]">
-        <DealFilters onFilterChange={handleFilterChange} />
+        <DealFilters
+          onFilterChange={handleFilterChange}
+          categories={availableCategories.map(category => ({
+            id: category,
+            label: category.toUpperCase(),
+          }))}
+        />
       </div>
 
       <div className="container mx-auto px-4 py-8 relative z-10">

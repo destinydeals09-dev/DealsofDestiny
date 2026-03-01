@@ -2,8 +2,14 @@
 
 import { useState } from 'react';
 
+interface CategoryOption {
+  id: string;
+  label: string;
+}
+
 interface DealFiltersProps {
   onFilterChange: (filters: FilterState) => void;
+  categories?: CategoryOption[];
 }
 
 export interface FilterState {
@@ -14,7 +20,7 @@ export interface FilterState {
   sortBy: 'discount' | 'newest' | 'quality';
 }
 
-export default function DealFilters({ onFilterChange }: DealFiltersProps) {
+export default function DealFilters({ onFilterChange, categories }: DealFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     category: '',
@@ -29,17 +35,9 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
     onFilterChange(newFilters);
   };
 
-  const categories = [
+  const categoryOptions = [
     { id: '', label: 'ALL_SYSTEMS' },
-    { id: 'gaming', label: 'GAMING' },
-    { id: 'fashion', label: 'FASHION' },
-    { id: 'beauty', label: 'BEAUTY' },
-    { id: 'tech', label: 'TECH' },
-    { id: 'home', label: 'HOME' },
-    { id: 'kitchen', label: 'KITCHEN' },
-    { id: 'fitness', label: 'FITNESS' },
-    { id: 'toys', label: 'TOYS' },
-    { id: 'books', label: 'BOOKS' },
+    ...(categories ?? []),
   ];
 
   return (
@@ -58,7 +56,7 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-terminal-green">▾</div>
         </div>
 
-        {categories.map(cat => (
+        {categoryOptions.map(cat => (
           <button
             key={cat.id}
             onClick={() => updateFilter('category', cat.id)}
