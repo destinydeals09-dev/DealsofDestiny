@@ -34,10 +34,36 @@ function sampleDealsByCategory(deals) {
   return Object.values(byCat).flat();
 }
 
+function normalizeProductUrl(rawUrl) {
+  if (!rawUrl) return rawUrl;
+
+  try {
+    const u = new URL(rawUrl);
+
+    // Walmart affiliate links often use /ip/seort/<id>; normalize to canonical /ip/<id>
+    if (u.hostname.includes('walmart.com') && u.pathname.includes('/ip/seort/')) {
+      u.pathname = u.pathname.replace('/ip/seort/', '/ip/');
+    }
+
+    // Strip common affiliate tracking params that can break availability checks
+    const trackingParams = [
+      'clickid', 'irgwc', 'afsrc', 'sourceid', 'veh',
+      'wmlspartner', 'affiliates_ad_id', 'campaign_id', 'sharedid'
+    ];
+    trackingParams.forEach(p => u.searchParams.delete(p));
+
+    return u.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
 async function urlReachable(url) {
   if (!url) return false;
+  const normalizedUrl = normalizeProductUrl(url);
+
   try {
-    const res = await axios.get(url, {
+    const res = await axios.get(normalizedUrl, {
       timeout: 8000,
       maxRedirects: 5,
       validateStatus: s => (s >= 200 && s < 400) || s === 403 || s === 429,
@@ -64,10 +90,14 @@ async function runQACheck() {
 
   const urlSamples = sampleDealsByCategory(deals);
   let urlFailures = 0;
+  const urlFailureByCategory = Object.fromEntries(TARGET_CATEGORIES.map(c => [c, 0]));
+
   for (const d of urlSamples) {
     const ok = await urlReachable(d.product_url);
     if (!ok) {
       urlFailures += 1;
+      const c = (d.category || '').toLowerCase();
+      if (urlFailureByCategory[c] !== undefined) urlFailureByCategory[c] += 1;
       console.log(`❌ URL failed: [${d.category}] ${d.product_name} -> ${d.product_url}`);
     }
   }
@@ -101,6 +131,10 @@ async function runQACheck() {
   if (urlFailures > 0) {
     failed = true;
     console.log(`❌ URL health failure: ${urlFailures} sample URLs unreachable`);
+    console.log('   URL failures by category:');
+    for (const c of TARGET_CATEGORIES) {
+      console.log(`   - ${c}: ${urlFailureByCategory[c] || 0}`);
+    }
   }
 
   if (failed) {
