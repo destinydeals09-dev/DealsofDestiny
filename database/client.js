@@ -270,3 +270,71 @@ export async function deactivateOldDeals(daysOld = 7) {
 
   return data;
 }
+
+// Helper: Dedupe active deals by semantic signature and keep strongest record.
+export async function dedupeActiveDeals(limit = 5000) {
+  const { data, error } = await supabase
+    .from('deals')
+    .select('id,category,product_name,sale_price,quality_score,scraped_at,active')
+    .eq('active', true)
+    .limit(limit);
+
+  if (error) {
+    console.error('Error reading deals for dedupe:', error);
+    throw error;
+  }
+
+  const groups = new Map();
+  for (const d of data || []) {
+    const key = [
+      (d.category || '').toLowerCase().trim(),
+      titleSignature(d.product_name || ''),
+      Math.round(Number(d.sale_price || 0))
+    ].join('|');
+
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(d);
+  }
+
+  const toDeactivate = [];
+
+  for (const list of groups.values()) {
+    if (list.length <= 1) continue;
+
+    list.sort((a, b) => {
+      const qa = Number(a.quality_score || 0);
+      const qb = Number(b.quality_score || 0);
+      if (qb !== qa) return qb - qa;
+
+      const ta = new Date(a.scraped_at).getTime();
+      const tb = new Date(b.scraped_at).getTime();
+      return tb - ta;
+    });
+
+    for (let i = 1; i < list.length; i++) {
+      toDeactivate.push(list[i].id);
+    }
+  }
+
+  let deactivated = 0;
+  const chunkSize = 200;
+
+  for (let i = 0; i < toDeactivate.length; i += chunkSize) {
+    const ids = toDeactivate.slice(i, i + chunkSize);
+    const { data: updated, error: updateError } = await supabase
+      .from('deals')
+      .update({ active: false })
+      .in('id', ids)
+      .eq('active', true)
+      .select('id');
+
+    if (updateError) {
+      console.error('Error deactivating duplicate deals:', updateError);
+      throw updateError;
+    }
+
+    deactivated += (updated || []).length;
+  }
+
+  return { groups: groups.size, deactivated };
+}

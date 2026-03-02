@@ -13,8 +13,8 @@ import { scrapeUlta } from './ulta.js';
 import { scrapeToysRUs } from './toysrus.js';
 // New v2.0 scrapers (deal aggregation)
 import { scrapeSlickdeals } from './slickdeals.js';
-import { scrapeReddit } from './reddit.js';
-import { upsertDeal, logScraperRun, deactivateOldDeals } from '../database/client.js';
+// import { scrapeReddit } from './reddit.js';
+import { upsertDeal, logScraperRun, deactivateOldDeals, dedupeActiveDeals } from '../database/client.js';
 
 async function runScraper(scraperFn, source) {
   const startTime = Date.now();
@@ -85,24 +85,14 @@ async function main() {
   // Run all scrapers in parallel
   const results = await Promise.allSettled([
     // v2.0 Deal Aggregators (Priority - these work!)
-    runScraper(scrapeSlickdeals, 'slickdeals'),
-    runScraper(scrapeReddit, 'reddit'),
-    runScraper(scrapeSteam, 'steam'),
+    scrapeSlickdeals().then(deals => runScraper(() => Promise.resolve(deals), 'slickdeals')),
+    // SCRAPED REDDIT REMOVED PER USER REQUEST
+    scrapeSteam().then(deals => runScraper(() => Promise.resolve(deals), 'steam')),
     
     // v2.1 Beauty & Toys (Worth trying despite anti-bot)
-    runScraper(scrapeSephora, 'sephora'),
-    runScraper(scrapeUlta, 'ulta'),
-    runScraper(scrapeToysRUs, 'toysrus'),
-    
-    // v1.0 Retail scrapers (archived - severe anti-bot issues)
-    // runScraper(scrapeBestBuy, 'bestbuy'),
-    // runScraper(scrapeNewegg, 'newegg'),
-    // runScraper(scrapeAmazon, 'amazon'),
-    // runScraper(scrapeMicroCenter, 'microcenter'),
-    // runScraper(scrapeGameStop, 'gamestop'),
-    // runScraper(scrapeTarget, 'target'),
-    // runScraper(scrapeWalmart, 'walmart'),
-    // runScraper(scrapeBHPhoto, 'bhphoto'),
+    scrapeSephora().then(deals => runScraper(() => Promise.resolve(deals), 'sephora')),
+    scrapeUlta().then(deals => runScraper(() => Promise.resolve(deals), 'ulta')),
+    scrapeToysRUs().then(deals => runScraper(() => Promise.resolve(deals), 'toysrus')),
   ]);
 
   // Summary
@@ -125,6 +115,14 @@ async function main() {
       console.log(`❌ Error: ${result.reason}`);
     }
   });
+
+  // Final semantic dedupe pass to suppress recurring duplicate cards.
+  try {
+    const dedupe = await dedupeActiveDeals(8000);
+    console.log(`🧹 Dedupe pass: ${dedupe.deactivated} duplicate active deals deactivated`);
+  } catch (err) {
+    console.error('⚠️ Dedupe pass failed:', err.message);
+  }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log('─────────────────────────────────');
