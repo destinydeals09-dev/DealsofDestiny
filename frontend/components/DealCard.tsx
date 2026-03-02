@@ -4,7 +4,7 @@ import React from 'react';
 import type { Deal } from '@/lib/supabase';
 import Image from 'next/image';
 
-interface DealCardProps { deal: Deal; }
+interface DealCardProps { deal: Deal; rank?: number; }
 
 const sourceLogos: Record<string, string> = {
   bestbuy: '🛒', newegg: '🖥️', steam: '🎮', amazon: '📦', microcenter: '💻',
@@ -29,7 +29,7 @@ const getCategoryIcon = (deal: Deal) => {
   return '🔥';
 };
 
-export default function DealCard({ deal }: DealCardProps) {
+export default function DealCard({ deal, rank }: DealCardProps) {
   const [imageError, setImageError] = React.useState(false);
   const savings = deal.original_price ? (deal.original_price - deal.sale_price).toFixed(2) : null;
 
@@ -44,6 +44,10 @@ export default function DealCard({ deal }: DealCardProps) {
         ) : (
           <div className="text-8xl opacity-20 transition-all">{getCategoryIcon(deal)}</div>
         )}
+
+        {rank ? (
+          <div className="absolute top-0 left-0 bg-black text-terminal-green font-bold font-mono text-xs px-2 py-1 border-r border-b border-terminal-green">#{rank}</div>
+        ) : null}
 
         {deal.discount_percent && deal.discount_percent > 0 && (
           <div className="absolute top-0 right-0 bg-terminal-green text-black font-bold font-mono text-xs px-2 py-1 border-l border-b border-black">-{deal.discount_percent}%</div>

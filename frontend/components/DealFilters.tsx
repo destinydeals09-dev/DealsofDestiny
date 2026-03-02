@@ -25,12 +25,12 @@ export default function DealFilters({ onFilterChange, categories }: DealFiltersP
     search: '',
     category: '',
     source: '',
-    minDiscount: 50,
-    sortBy: 'discount'
+    minDiscount: 0,
+    sortBy: 'quality'
   });
 
-  const updateFilter = (key: keyof FilterState, value: any) => {
-    const newFilters = { ...filters, [key]: value };
+  const updateFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
+    const newFilters: FilterState = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
@@ -46,7 +46,7 @@ export default function DealFilters({ onFilterChange, categories }: DealFiltersP
         <div className="relative group">
           <select
             value={filters.sortBy}
-            onChange={(e) => updateFilter('sortBy', e.target.value as any)}
+            onChange={(e) => updateFilter('sortBy', e.target.value as FilterState['sortBy'])}
             className="appearance-none pl-3 pr-8 py-1.5 rounded text-xs font-bold whitespace-nowrap bg-surface border border-[#252529] text-terminal-green cursor-pointer outline-none hover:border-terminal-green focus:ring-1 focus:ring-terminal-green transition-colors uppercase tracking-wider"
           >
             <option value="discount">SORT: TOP_DEALS</option>

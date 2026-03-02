@@ -2,7 +2,7 @@
   "name": "DealsofDestiny Scraper",
   "schedule": {
     "kind": "cron",
-    "expr": "0 */6 * * *",
+    "expr": "0 * * * *",
     "tz": "America/Los_Angeles"
   },
   "payload": {
