@@ -14,29 +14,7 @@ type RankedDeal = Deal & { rank: number; dedupeKey: string };
 
 const normalizeCategory = (category: string | null | undefined) => (category || '').trim().toLowerCase();
 
-const normalizeProductUrl = (rawUrl: string | null | undefined) => {
-  if (!rawUrl) return '';
-
-  try {
-    const url = new URL(rawUrl);
-
-    if (url.hostname.includes('walmart.com') && url.pathname.includes('/ip/seort/')) {
-      url.pathname = url.pathname.replace('/ip/seort/', '/ip/');
-    }
-
-    [
-      'clickid', 'irgwc', 'afsrc', 'sourceid', 'veh',
-      'wmlspartner', 'affiliates_ad_id', 'campaign_id', 'sharedid',
-      'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
-      'ref', 'ref_', 'tag', 'ascsubtag'
-    ].forEach(param => url.searchParams.delete(param));
-
-    url.hash = '';
-    return url.toString();
-  } catch {
-    return rawUrl;
-  }
-};
+// URL canonicalization now happens in backend ingestion quality gate.
 
 const normalizeText = (text: string | null | undefined) =>
   (text || '')
@@ -44,6 +22,28 @@ const normalizeText = (text: string | null | undefined) =>
     .replace(/[^a-z0-9\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+
+const titleSignature = (text: string | null | undefined) =>
+  normalizeText(text)
+    .split(' ')
+    .filter(Boolean)
+    .filter(token => !['with', 'and', 'the', 'for', 'free', 'shipping', 'more', 'plus'].includes(token))
+    .slice(0, 10)
+    .join(' ');
+
+const inferMerchant = (rawUrl: string | null | undefined, fallbackSource: string | null | undefined) => {
+  try {
+    const hostname = new URL(rawUrl || '').hostname.toLowerCase().replace(/^www\./, '');
+    if (hostname.includes('walmart')) return 'walmart';
+    if (hostname.includes('amazon')) return 'amazon';
+    if (hostname.includes('target')) return 'target';
+    if (hostname.includes('bestbuy')) return 'bestbuy';
+    if (hostname.includes('costco')) return 'costco';
+    return hostname || (fallbackSource || 'unknown');
+  } catch {
+    return fallbackSource || 'unknown';
+  }
+};
 
 const getOriginalPrice = (deal: Deal) => {
   if (deal.original_price) return deal.original_price;
@@ -79,13 +79,16 @@ const compareDeals = (a: Deal, b: Deal) => {
 };
 
 const buildDedupeKey = (deal: Deal) => {
-  const normalizedUrl = normalizeProductUrl(deal.product_url);
-  if (normalizedUrl) return `url:${normalizedUrl}`;
-
-  const title = normalizeText(deal.product_name);
+  const merchant = inferMerchant(deal.product_url, deal.source);
   const category = normalizeCategory(deal.category);
-  const saleBucket = Math.round((deal.sale_price || 0) * 100);
-  return `fallback:${category}:${title}:${saleBucket}`;
+  const title = titleSignature(deal.product_name);
+  const saleBucket = Math.round((deal.sale_price || 0));
+
+  // Primary dedupe is semantic (merchant + normalized title + rounded price)
+  // so affiliate URL variants don't create visual duplicates.
+  const semanticKey = `sem:${merchant}:${category}:${title}:${saleBucket}`;
+
+  return semanticKey;
 };
 
 export default function Home() {
