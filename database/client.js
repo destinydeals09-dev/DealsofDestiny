@@ -272,20 +272,35 @@ export async function deactivateOldDeals(daysOld = 7) {
 }
 
 // Helper: Dedupe active deals by semantic signature and keep strongest record.
-export async function dedupeActiveDeals(limit = 5000) {
-  const { data, error } = await supabase
-    .from('deals')
-    .select('id,category,product_name,sale_price,quality_score,scraped_at,active')
-    .eq('active', true)
-    .limit(limit);
+export async function dedupeActiveDeals(limit = 20000) {
+  const rows = [];
+  const pageSize = 1000;
+  let lastId = 0;
 
-  if (error) {
-    console.error('Error reading deals for dedupe:', error);
-    throw error;
+  while (rows.length < limit) {
+    const { data, error } = await supabase
+      .from('deals')
+      .select('id,category,product_name,sale_price,quality_score,scraped_at,active')
+      .eq('active', true)
+      .gt('id', lastId)
+      .order('id', { ascending: true })
+      .limit(pageSize);
+
+    if (error) {
+      console.error('Error reading deals for dedupe:', error);
+      throw error;
+    }
+
+    if (!data || data.length === 0) break;
+
+    rows.push(...data);
+    lastId = data[data.length - 1].id;
+
+    if (data.length < pageSize) break;
   }
 
   const groups = new Map();
-  for (const d of data || []) {
+  for (const d of rows) {
     const key = [
       (d.category || '').toLowerCase().trim(),
       titleSignature(d.product_name || ''),
