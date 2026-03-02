@@ -91,14 +91,30 @@ async function runQACheck() {
   const urlSamples = sampleDealsByCategory(deals);
   let urlFailures = 0;
   const urlFailureByCategory = Object.fromEntries(TARGET_CATEGORIES.map(c => [c, 0]));
+  const failedDealIds = [];
 
   for (const d of urlSamples) {
     const ok = await urlReachable(d.product_url);
     if (!ok) {
       urlFailures += 1;
+      failedDealIds.push(d.id);
       const c = (d.category || '').toLowerCase();
       if (urlFailureByCategory[c] !== undefined) urlFailureByCategory[c] += 1;
       console.log(`❌ URL failed: [${d.category}] ${d.product_name} -> ${d.product_url}`);
+    }
+  }
+
+  // Auto-quarantine unreachable sampled deals so they stop recurring in top results.
+  if (failedDealIds.length > 0) {
+    const { error: quarantineError } = await supabase
+      .from('deals')
+      .update({ active: false })
+      .in('id', failedDealIds);
+
+    if (quarantineError) {
+      console.log(`⚠️ Failed to auto-quarantine dead URLs: ${quarantineError.message}`);
+    } else {
+      console.log(`🧹 Auto-quarantined ${failedDealIds.length} unreachable sampled deal(s)`);
     }
   }
 

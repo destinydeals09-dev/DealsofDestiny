@@ -20,12 +20,146 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 });
 
+const TRACKING_PARAMS = [
+  'clickid', 'irgwc', 'afsrc', 'sourceid', 'veh',
+  'wmlspartner', 'affiliates_ad_id', 'campaign_id', 'sharedid',
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'ref', 'ref_', 'tag', 'ascsubtag'
+];
+
+const STOPWORDS = new Set(['with', 'and', 'for', 'the', 'from', 'free', 'shipping', 'more', 'plus']);
+
+const BLOCKED_URL_PATTERNS = [
+  // Recurring dead/blocked URLs hurting QA reliability
+  'walmart.com/ip/18411724651',
+  'walmart.com/ip/balancefrom-rubber-encased-hex-dumbbells-35-lbs-pair-black/543158152',
+  'walmart.com/ip/5157277001',
+  'walmart.com/ip/5-tier-book-shelf-large-wooden-bookcase-with-open-display-shelf-modern-bookshelf-metal-frame-furniture-for-living-room-bedroom-home-office-vintage/17310854797',
+  'walmart.com/ip/15914794',
+  'walmart.com/ip/5430838726',
+  'costco.com/p/-/msi-aegis-gaming-desktop-amd-ryzen-9-9900x-geforce-rtx-5080-windows-11-home-32gb-ram-2tb-ssd/4000355760'
+];
+
+function normalizeProductUrl(rawUrl) {
+  if (!rawUrl) return '';
+
+  try {
+    const url = new URL(rawUrl);
+
+    if (url.hostname.includes('walmart.com') && url.pathname.includes('/ip/seort/')) {
+      url.pathname = url.pathname.replace('/ip/seort/', '/ip/');
+    }
+
+    TRACKING_PARAMS.forEach(param => url.searchParams.delete(param));
+    url.hash = '';
+
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+function normalizeName(name = '') {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function titleSignature(name = '') {
+  const tokens = normalizeName(name)
+    .split(' ')
+    .filter(Boolean)
+    .filter(t => !STOPWORDS.has(t));
+
+  return tokens.slice(0, 8).join(' ');
+}
+
+function inferMerchant(productUrl, fallbackSource) {
+  try {
+    const hostname = new URL(productUrl).hostname.toLowerCase();
+    if (hostname.includes('walmart')) return 'walmart';
+    if (hostname.includes('amazon')) return 'amazon';
+    if (hostname.includes('target')) return 'target';
+    if (hostname.includes('bestbuy')) return 'bestbuy';
+    if (hostname.includes('newegg')) return 'newegg';
+    if (hostname.includes('gamestop')) return 'gamestop';
+    if (hostname.includes('bhphotovideo') || hostname.includes('bhphoto')) return 'bhphoto';
+    return hostname.replace(/^www\./, '');
+  } catch {
+    return fallbackSource || 'unknown';
+  }
+}
+
+function computeQualityScore(dealData) {
+  const discount = Number(dealData.discount_percent || 0);
+  const salePrice = Number(dealData.sale_price || 0);
+  const original = Number(dealData.original_price || 0);
+  const savings = original > salePrice ? (original - salePrice) : 0;
+  const sourceConfidence = Number(dealData.source_confidence ?? 60);
+
+  let score = 0;
+  score += Math.min(60, discount * 1.4);
+  score += Math.min(20, savings / 5);
+  score += Math.min(15, sourceConfidence / 8);
+  if (dealData.image_url) score += 5;
+
+  return Math.round(score);
+}
+
+function passesQualityGate(dealData) {
+  const salePrice = Number(dealData.sale_price || 0);
+  const discount = Number(dealData.discount_percent || 0);
+  const hasName = !!dealData.product_name && dealData.product_name.trim().length >= 12;
+  const hasUrl = !!dealData.product_url;
+
+  if (!hasName || !hasUrl || salePrice <= 0) return false;
+
+  const lowerUrl = String(dealData.product_url || '').toLowerCase();
+  if (BLOCKED_URL_PATTERNS.some(pattern => lowerUrl.includes(pattern))) return false;
+
+  // Light threshold so we keep category coverage while removing obvious junk.
+  if (salePrice < 10) return false;
+  if (discount < 5) return false;
+
+  return true;
+}
+
+async function findNearDuplicateCandidate(dealData) {
+  const signature = titleSignature(dealData.product_name);
+  if (!signature) return null;
+
+  const minPrice = Math.max(0, Number(dealData.sale_price || 0) - 3);
+  const maxPrice = Number(dealData.sale_price || 0) + 3;
+
+  const { data, error } = await supabase
+    .from('deals')
+    .select('id,product_name,product_url,quality_score,scraped_at,source_confidence')
+    .eq('active', true)
+    .eq('category', dealData.category)
+    .gte('sale_price', minPrice)
+    .lte('sale_price', maxPrice)
+    .gte('scraped_at', new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString())
+    .limit(80);
+
+  if (error || !data?.length) return null;
+
+  return data.find(row => {
+    const existingSig = titleSignature(row.product_name || '');
+    if (!existingSig) return false;
+
+    const overlap = existingSig.split(' ').filter(token => signature.includes(token)).length;
+    return overlap >= 3;
+  }) || null;
+}
+
 // Helper: Insert or update deal (upsert based on product_url)
 export async function upsertDeal(deal) {
-  // Map v2.0 format to v1.0 schema
-  // v2.0 uses: price, discount_pct, is_active, quality_score, expires_at
-  // v1.0 uses: sale_price, discount_percent, active, source_url
-  
+  const canonicalUrl = normalizeProductUrl(deal.product_url);
+  const merchant = inferMerchant(canonicalUrl || deal.product_url, deal.source);
+
+  // Map v2.0 format to v1.0+ schema
   const dealData = {
     product_name: deal.product_name,
     description: deal.description || null,
@@ -34,11 +168,37 @@ export async function upsertDeal(deal) {
     sale_price: deal.sale_price || deal.price || 0,
     discount_percent: deal.discount_percent || deal.discount_pct || 0,
     image_url: deal.image_url || null,
-    product_url: deal.product_url,
+    product_url: canonicalUrl,
     source: deal.source,
+    source_url: deal.source_url || null,
     scraped_at: new Date().toISOString(),
-    active: deal.active !== undefined ? deal.active : (deal.is_active !== undefined ? deal.is_active : true)
+    active: deal.active !== undefined ? deal.active : (deal.is_active !== undefined ? deal.is_active : true),
+    merchant,
+    network: deal.network || 'direct',
+    source_confidence: deal.source_confidence ?? 70,
+    is_verified: deal.is_verified ?? false
   };
+
+  dealData.quality_score = deal.quality_score ?? computeQualityScore(dealData);
+
+  if (!passesQualityGate(dealData)) {
+    return [];
+  }
+
+  // Guardrail dedupe: if very similar deal exists recently, keep better-quality record.
+  const nearDuplicate = await findNearDuplicateCandidate(dealData);
+  if (nearDuplicate) {
+    const existingScore = Number(nearDuplicate.quality_score || 0);
+    if (existingScore >= dealData.quality_score) {
+      return [];
+    }
+
+    // Replace weaker duplicate with stronger one by deactivating older row.
+    await supabase
+      .from('deals')
+      .update({ active: false })
+      .eq('id', nearDuplicate.id);
+  }
 
   const { data, error } = await supabase
     .from('deals')
