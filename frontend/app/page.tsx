@@ -290,6 +290,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono relative">
       <div className="scanlines" />
+      <div className="grain-overlay" />
       <div className="crt-overlay" />
 
       <header className="bg-surface/80 backdrop-blur-md border-b border-[#252529] sticky top-0 z-50">
