@@ -68,9 +68,9 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
       {isActiveTouchCard && <span key={touchPulse} className="touch-shimmer-overlay" />}
       <div className="absolute inset-0 bg-terminal-green/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
 
-      <div className="relative h-48 bg-black/50 border-b border-[#252529] flex items-center justify-center overflow-hidden">
+      <div className="relative h-48 bg-white border-b border-[#252529] flex items-center justify-center overflow-hidden">
         {deal.image_url && !imageError ? (
-          <Image src={deal.image_url} alt={deal.product_name} fill className="object-contain p-4 group-hover:scale-105 transition-transform duration-300" unoptimized onError={() => setImageError(true)} />
+          <Image src={deal.image_url} alt={deal.product_name} fill className="object-contain p-2 bg-white group-hover:scale-105 transition-transform duration-300" unoptimized onError={() => setImageError(true)} />
         ) : (
           <div className="text-8xl opacity-20 transition-all">{getCategoryIcon(deal)}</div>
         )}
