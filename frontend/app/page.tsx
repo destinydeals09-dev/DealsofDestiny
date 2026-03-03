@@ -12,6 +12,7 @@ const TARGET_CATEGORY_SET = new Set<string>(TARGET_CATEGORIES);
 const PRIORITY_SOURCES = new Set(['amazon', 'walmart', 'newegg']);
 
 type RankedDeal = Deal & { rank: number; dedupeKey: string };
+type FashionView = 'men' | 'women';
 
 const normalizeCategory = (category: string | null | undefined) => (category || '').trim().toLowerCase();
 
@@ -120,6 +121,16 @@ const buildDedupeKey = (deal: Deal) => {
   return semanticKey;
 };
 
+const inferFashionSegment = (name: string) => {
+  const n = (name || '').toLowerCase();
+  const womenSignals = /(women|woman|ladies|lady|girls|female|maternity|bra|legging|dress|skirt|blouse)/.test(n);
+  const menSignals = /(men|man's|mens|gentlemen|guys|male|boys|boxer|cargo|polo|oxford)/.test(n);
+
+  if (womenSignals && !menSignals) return 'women';
+  if (menSignals && !womenSignals) return 'men';
+  return 'men';
+};
+
 const normalizeImageKey = (url: string | null | undefined) => {
   if (!url) return '';
   try {
@@ -142,8 +153,9 @@ export default function Home() {
     minDiscount: 0,
     sortBy: 'quality'
   });
-  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([...TARGET_CATEGORIES]);
   const [loading, setLoading] = useState(true);
+  const [fashionView, setFashionView] = useState<FashionView>('men');
   const [activeTouchCardId, setActiveTouchCardId] = useState<string | null>(null);
   const [touchPulse, setTouchPulse] = useState(0);
 
@@ -175,7 +187,7 @@ export default function Home() {
       try {
         const data = await fetchAllHotDeals(5000);
 
-        const qualityDeals = data.filter(deal => {
+        const baseSafeDeals = data.filter(deal => {
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
             deal.product_name?.toLowerCase().includes('expired') ||
             (deal.expires_at && new Date(deal.expires_at) < new Date());
@@ -190,6 +202,12 @@ export default function Home() {
           const category = normalizeCategory(deal.category);
           if (!TARGET_CATEGORY_SET.has(category)) return false;
           if (hasCreditCardLikeContent(deal.product_name || '')) return false;
+
+          return true;
+        });
+
+        const strictDeals = baseSafeDeals.filter(deal => {
+          const category = normalizeCategory(deal.category);
           if (!isSingleProductListing(deal.product_name || '')) return false;
           if (!categoryLooksValid(category, deal.product_name || '')) return false;
 
@@ -199,40 +217,52 @@ export default function Home() {
           return !!originalPrice && originalPrice >= minOriginalPrice;
         });
 
-        // Global dedupe pool (best deal wins in each duplicate cluster)
-        const bestByKey = new Map<string, Deal>();
-        for (const deal of qualityDeals) {
-          const key = buildDedupeKey(deal);
-          const existing = bestByKey.get(key);
-          if (!existing || compareDeals(deal, existing) < 0) {
-            bestByKey.set(key, deal);
-          }
-        }
+        const fallbackDeals = baseSafeDeals.filter(deal => {
+          const originalPrice = getOriginalPrice(deal);
+          return !!originalPrice && originalPrice >= 12;
+        });
 
-        const dedupedPool = [...bestByKey.values()].sort(compareDeals);
+        const dedupePool = (deals: Deal[]) => {
+          const bestByKey = new Map<string, Deal>();
+          for (const deal of deals) {
+            const key = buildDedupeKey(deal);
+            const existing = bestByKey.get(key);
+            if (!existing || compareDeals(deal, existing) < 0) bestByKey.set(key, deal);
+          }
+          return [...bestByKey.values()].sort(compareDeals);
+        };
+
+        const strictPool = dedupePool(strictDeals);
+        const fallbackPool = dedupePool(fallbackDeals);
 
         const nextCategoryDeals: Record<string, RankedDeal[]> = {};
-        const liveCategories: string[] = [];
 
         for (const category of TARGET_CATEGORIES) {
           const ranked: RankedDeal[] = [];
           const seenImageKeys = new Set<string>();
+          const usedKeys = new Set<string>();
 
-          for (const deal of dedupedPool) {
-            if (normalizeCategory(deal.category) !== category) continue;
+          const appendFromPool = (pool: Deal[]) => {
+            for (const deal of pool) {
+              if (ranked.length >= 10) break;
+              if (normalizeCategory(deal.category) !== category) continue;
 
-            const imageKey = normalizeImageKey(deal.image_url);
-            if (imageKey && seenImageKeys.has(imageKey)) continue;
-            if (imageKey) seenImageKeys.add(imageKey);
+              const dKey = buildDedupeKey(deal);
+              if (usedKeys.has(dKey)) continue;
 
-            ranked.push({ ...deal, rank: ranked.length + 1, dedupeKey: buildDedupeKey(deal) });
-            if (ranked.length === 10) break;
-          }
+              const imageKey = normalizeImageKey(deal.image_url);
+              if (imageKey && seenImageKeys.has(imageKey)) continue;
 
-          if (ranked.length === 10) {
-            nextCategoryDeals[category] = ranked;
-            liveCategories.push(category);
-          }
+              usedKeys.add(dKey);
+              if (imageKey) seenImageKeys.add(imageKey);
+              ranked.push({ ...deal, rank: ranked.length + 1, dedupeKey: dKey });
+            }
+          };
+
+          appendFromPool(strictPool);
+          if (ranked.length < 10) appendFromPool(fallbackPool);
+
+          nextCategoryDeals[category] = ranked;
         }
 
         // "Shop All": best 10 across all categories, no duplicates.
@@ -255,7 +285,7 @@ export default function Home() {
         }
 
         setCategoryDeals(nextCategoryDeals);
-        setAvailableCategories(liveCategories);
+        setAvailableCategories([...TARGET_CATEGORIES]);
         setShopAllDeals(allTopTen);
       } catch (err) {
         console.error('Failed to fetch deals:', err);
@@ -280,6 +310,9 @@ export default function Home() {
 
     if (filters.source) next = next.filter(deal => deal.source === filters.source);
     if (filters.minDiscount > 0) next = next.filter(deal => (deal.discount_percent ?? 0) >= filters.minDiscount);
+    if (filters.category === 'fashion') {
+      next = next.filter(deal => inferFashionSegment(deal.product_name) === fashionView);
+    }
 
     // Keep rank-first behavior by default, allow alternate views for debugging.
     switch (filters.sortBy) {
@@ -296,7 +329,7 @@ export default function Home() {
     }
 
     return next;
-  }, [filters, categoryDeals, shopAllDeals]);
+  }, [filters, categoryDeals, shopAllDeals, fashionView]);
 
   const handleCardTouch = (cardId: string) => {
     setActiveTouchCardId(cardId);
@@ -333,6 +366,22 @@ export default function Home() {
             label: category.toUpperCase(),
           }))}
         />
+        {filters.category === 'fashion' && (
+          <div className="px-4 pb-3 flex gap-2">
+            <button
+              onClick={() => setFashionView('men')}
+              className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wide border transition-all ${fashionView === 'men' ? 'bg-terminal-green text-black border-terminal-green shadow-[0_0_10px_rgba(57,255,20,0.35)]' : 'bg-surface text-muted border-[#252529] hover:text-terminal-green hover:border-terminal-green/50'}`}
+            >
+              MEN&apos;S
+            </button>
+            <button
+              onClick={() => setFashionView('women')}
+              className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wide border transition-all ${fashionView === 'women' ? 'bg-terminal-green text-black border-terminal-green shadow-[0_0_10px_rgba(57,255,20,0.35)]' : 'bg-surface text-muted border-[#252529] hover:text-terminal-green hover:border-terminal-green/50'}`}
+            >
+              WOMEN&apos;S
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="container mx-auto px-4 py-8 relative z-10">
