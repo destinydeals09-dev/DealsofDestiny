@@ -14,7 +14,7 @@ import { scrapeToysRUs } from './toysrus.js';
 // New v2.0 scrapers (deal aggregation)
 import { scrapeSlickdeals } from './slickdeals.js';
 // import { scrapeReddit } from './reddit.js';
-import { upsertDeal, logScraperRun, deactivateOldDeals, dedupeActiveDeals } from '../database/client.js';
+import { upsertDeal, logScraperRun, deactivateOldDeals, dedupeActiveDeals, enforceActiveDealPolicy } from '../database/client.js';
 
 async function runScraper(scraperFn, source) {
   const startTime = Date.now();
@@ -118,10 +118,18 @@ async function main() {
 
   // Final semantic dedupe pass to suppress recurring duplicate cards.
   try {
-    const dedupe = await dedupeActiveDeals(8000);
+    const dedupe = await dedupeActiveDeals(20000);
     console.log(`🧹 Dedupe pass: ${dedupe.deactivated} duplicate active deals deactivated`);
   } catch (err) {
     console.error('⚠️ Dedupe pass failed:', err.message);
+  }
+
+  // Final policy enforcement pass so category/quality rules are one-and-done.
+  try {
+    const policy = await enforceActiveDealPolicy(20000);
+    console.log(`🛡️ Policy pass: scanned ${policy.scanned}, deactivated ${policy.deactivated}`);
+  } catch (err) {
+    console.error('⚠️ Policy pass failed:', err.message);
   }
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);

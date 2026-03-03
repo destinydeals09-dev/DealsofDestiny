@@ -402,3 +402,70 @@ export async function dedupeActiveDeals(limit = 20000) {
 
   return { groups: groups.size, deactivated };
 }
+
+// Helper: Enforce long-lived content policy on active deals so fixes stick over time.
+export async function enforceActiveDealPolicy(limit = 20000) {
+  const rows = [];
+  const pageSize = 1000;
+  let lastId = 0;
+
+  while (rows.length < limit) {
+    const { data, error } = await supabase
+      .from('deals')
+      .select('id,product_name,category,sale_price,discount_percent,product_url,active')
+      .eq('active', true)
+      .gt('id', lastId)
+      .order('id', { ascending: true })
+      .limit(pageSize);
+
+    if (error) {
+      console.error('Error reading deals for policy enforcement:', error);
+      throw error;
+    }
+
+    if (!data || data.length === 0) break;
+
+    rows.push(...data);
+    lastId = data[data.length - 1].id;
+
+    if (data.length < pageSize) break;
+  }
+
+  const toDeactivate = [];
+
+  for (const row of rows) {
+    const dealLike = {
+      product_name: row.product_name,
+      category: row.category,
+      sale_price: row.sale_price,
+      discount_percent: row.discount_percent,
+      product_url: row.product_url
+    };
+
+    if (!passesQualityGate(dealLike)) {
+      toDeactivate.push(row.id);
+    }
+  }
+
+  let deactivated = 0;
+  const chunkSize = 200;
+
+  for (let i = 0; i < toDeactivate.length; i += chunkSize) {
+    const ids = toDeactivate.slice(i, i + chunkSize);
+    const { data: updated, error: updateError } = await supabase
+      .from('deals')
+      .update({ active: false })
+      .in('id', ids)
+      .eq('active', true)
+      .select('id');
+
+    if (updateError) {
+      console.error('Error deactivating policy-violating deals:', updateError);
+      throw updateError;
+    }
+
+    deactivated += (updated || []).length;
+  }
+
+  return { scanned: rows.length, deactivated };
+}
