@@ -53,8 +53,6 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
     return null;
   }, [deal.original_price, deal.sale_price, deal.discount_percent]);
 
-  const savings = computedOriginalPrice ? (computedOriginalPrice - deal.sale_price).toFixed(2) : null;
-
   return (
     <a
       href={deal.product_url}
@@ -90,22 +88,13 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
       </div>
 
       <div className="p-4 flex flex-col h-[calc(100%-12rem)] relative z-20">
-        <h3 className="text-foreground font-bold text-sm leading-tight line-clamp-2 mb-3 font-mono group-hover:text-terminal-green transition-colors">{deal.product_name}</h3>
+        <h3 className="text-foreground font-bold text-sm leading-tight line-clamp-2 mb-2 font-mono group-hover:text-terminal-green transition-colors">{deal.product_name}</h3>
         <div className="mt-auto">
-          {deal.category && (
-            <div className="mb-2"><span className="text-[10px] text-muted uppercase tracking-widest border border-[#252529] px-1.5 py-0.5 rounded-sm">{deal.category}</span></div>
-          )}
-          <div className="flex items-end justify-between border-t border-[#252529] pt-3 mt-1">
+          <div className="flex items-end justify-between border-t border-[#252529] pt-2 mt-1">
             <div className="flex flex-col">
               <span className="text-xs text-muted line-through">{computedOriginalPrice ? `$${computedOriginalPrice.toFixed(2)}` : '—'}</span>
               <span className="text-xl font-bold text-terminal-green font-mono tracking-tight">${deal.sale_price.toFixed(2)}</span>
             </div>
-            {savings && parseFloat(savings) > 0 && (
-              <div className="text-right">
-                <p className="text-[10px] text-muted uppercase tracking-wider">Saved</p>
-                <p className="text-xs font-bold text-foreground">${savings}</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
