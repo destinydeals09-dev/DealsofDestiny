@@ -31,6 +31,11 @@ const getCategoryIcon = (deal: Deal) => {
 
 export default function DealCard({ deal, rank }: DealCardProps) {
   const [imageError, setImageError] = React.useState(false);
+  const [shimmerPulse, setShimmerPulse] = React.useState(0);
+
+  const triggerTouchShimmer = React.useCallback(() => {
+    setShimmerPulse((prev) => prev + 1);
+  }, []);
 
   const computedOriginalPrice = React.useMemo(() => {
     if (deal.original_price && deal.original_price > deal.sale_price) return deal.original_price;
@@ -45,7 +50,11 @@ export default function DealCard({ deal, rank }: DealCardProps) {
 
   return (
     <a href={deal.product_url} target="_blank" rel="noopener noreferrer"
+      onTouchStart={triggerTouchShimmer}
+      onTouchEnd={triggerTouchShimmer}
+      onTouchCancel={triggerTouchShimmer}
       className="group holographic-card block bg-surface border border-[#252529] hover:border-terminal-green hover:shadow-[0_0_20px_rgba(57,255,20,0.15)] transition-all duration-200 relative overflow-hidden">
+      {shimmerPulse > 0 && <span key={shimmerPulse} className="touch-shimmer-overlay" />}
       <div className="absolute inset-0 bg-terminal-green/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
 
       <div className="relative h-48 bg-black/50 border-b border-[#252529] flex items-center justify-center overflow-hidden">

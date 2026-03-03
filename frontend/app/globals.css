@@ -131,6 +131,25 @@ body {
   transform: translateX(120%);
 }
 
+.touch-shimmer-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  background: linear-gradient(115deg,
+    rgba(255,255,255,0) 20%,
+    rgba(255,255,255,0.16) 38%,
+    rgba(255,255,255,0.04) 48%,
+    rgba(255,255,255,0) 62%);
+  transform: translateX(-120%);
+  animation: touchShimmerSweep 700ms ease;
+}
+
+@keyframes touchShimmerSweep {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
+
 @keyframes holoShift {
   0% { filter: hue-rotate(0deg) saturate(1); }
   50% { filter: hue-rotate(20deg) saturate(1.15); }
