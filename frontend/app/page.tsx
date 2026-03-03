@@ -98,17 +98,40 @@ export default function Home() {
     search: '',
     category: '',
     source: '',
-    minDiscount: 50,
+    minDiscount: 0,
     sortBy: 'quality'
   });
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchDeals() {
-      const { data, error } = await supabase.from('hot_deals').select('*').limit(1000);
+    async function fetchAllHotDeals(maxRows = 5000) {
+      const pageSize = 1000;
+      let from = 0;
+      const all: Deal[] = [];
 
-      if (!error && data) {
+      while (all.length < maxRows) {
+        const to = from + pageSize - 1;
+        const { data, error } = await supabase
+          .from('hot_deals')
+          .select('*')
+          .range(from, to);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        all.push(...data as Deal[]);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+
+      return all;
+    }
+
+    async function fetchDeals() {
+      try {
+        const data = await fetchAllHotDeals(5000);
+
         const qualityDeals = data.filter(deal => {
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
             deal.product_name?.toLowerCase().includes('expired') ||
@@ -169,8 +192,11 @@ export default function Home() {
         setCategoryDeals(nextCategoryDeals);
         setAvailableCategories(liveCategories);
         setShopAllDeals(allTopTen);
+      } catch (err) {
+        console.error('Failed to fetch deals:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     fetchDeals();
