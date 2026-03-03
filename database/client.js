@@ -166,6 +166,7 @@ function passesQualityGate(dealData) {
   if (!categoryLooksValid(dealData.category, dealData.product_name)) return false;
 
   const lowerUrl = String(dealData.product_url || '').toLowerCase();
+  if (lowerUrl.includes('ebay.com')) return false;
   if (BLOCKED_URL_PATTERNS.some(pattern => lowerUrl.includes(pattern))) return false;
 
   // Light threshold so we keep category coverage while removing obvious junk.

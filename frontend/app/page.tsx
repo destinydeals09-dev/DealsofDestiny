@@ -174,6 +174,7 @@ export default function Home() {
             (deal.expires_at && new Date(deal.expires_at) < new Date());
           if (isExpired) return false;
           if (deal.product_url?.includes('reddit.com') || deal.product_url?.includes('redd.it')) return false;
+          if (deal.product_url?.toLowerCase().includes('ebay.com')) return false;
 
           const text = `${deal.product_name} ${deal.category || ''}`.toLowerCase();
           const locationKeywords = ['in-store', 'in store', 'local', 'ymmv', 'new york', 'los angeles', 'seattle'];
