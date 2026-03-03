@@ -128,9 +128,11 @@ body {
   transition: opacity 220ms ease;
 }
 
-.holographic-card:hover::after {
-  opacity: 1;
-  transform: translateX(120%);
+@media (hover: hover) and (pointer: fine) {
+  .holographic-card:hover::after {
+    opacity: 1;
+    transform: translateX(120%);
+  }
 }
 
 .touch-shimmer-overlay {
