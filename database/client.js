@@ -149,6 +149,11 @@ function categoryLooksValid(category = '', name = '') {
   return true;
 }
 
+function hasCreditCardLikeContent(name = '') {
+  const n = String(name).toLowerCase();
+  return /\bgift card\b|\bcredit card\b|\bdebit card\b|\bprepaid card\b|\bvisa\b|\bmastercard\b|\bamerican express\b|\bamex\b|\bdiscover card\b/.test(n);
+}
+
 function passesQualityGate(dealData) {
   const salePrice = Number(dealData.sale_price || 0);
   const discount = Number(dealData.discount_percent || 0);
@@ -156,6 +161,7 @@ function passesQualityGate(dealData) {
   const hasUrl = !!dealData.product_url;
 
   if (!hasName || !hasUrl || salePrice <= 0) return false;
+  if (hasCreditCardLikeContent(dealData.product_name)) return false;
   if (!isSingleProductDeal(dealData.product_name)) return false;
   if (!categoryLooksValid(dealData.category, dealData.product_name)) return false;
 

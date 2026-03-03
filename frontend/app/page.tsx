@@ -45,6 +45,9 @@ const inferMerchant = (rawUrl: string | null | undefined, fallbackSource: string
   }
 };
 
+const hasCreditCardLikeContent = (name: string) =>
+  /\bgift card\b|\bcredit card\b|\bdebit card\b|\bprepaid card\b|\bvisa\b|\bmastercard\b|\bamerican express\b|\bamex\b|\bdiscover card\b/i.test(name);
+
 const categoryLooksValid = (category: string, name: string) => {
   const n = name.toLowerCase();
 
@@ -166,6 +169,7 @@ export default function Home() {
 
           const category = normalizeCategory(deal.category);
           if (!TARGET_CATEGORY_SET.has(category)) return false;
+          if (hasCreditCardLikeContent(deal.product_name || '')) return false;
           if (!categoryLooksValid(category, deal.product_name || '')) return false;
 
           const originalPrice = getOriginalPrice(deal);
