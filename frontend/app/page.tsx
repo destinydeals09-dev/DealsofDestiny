@@ -194,7 +194,9 @@ export default function Home() {
           if (!categoryLooksValid(category, deal.product_name || '')) return false;
 
           const originalPrice = getOriginalPrice(deal);
-          return !!originalPrice && originalPrice >= 30;
+          const source = (deal.source || '').toLowerCase();
+          const minOriginalPrice = PRIORITY_SOURCES.has(source) ? 20 : 30;
+          return !!originalPrice && originalPrice >= minOriginalPrice;
         });
 
         // Global dedupe pool (best deal wins in each duplicate cluster)
