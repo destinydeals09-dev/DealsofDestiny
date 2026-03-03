@@ -142,6 +142,8 @@ export default function Home() {
   });
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTouchCardId, setActiveTouchCardId] = useState<string | null>(null);
+  const [touchPulse, setTouchPulse] = useState(0);
 
   useEffect(() => {
     async function fetchAllHotDeals(maxRows = 5000) {
@@ -292,6 +294,11 @@ export default function Home() {
     return next;
   }, [filters, categoryDeals, shopAllDeals]);
 
+  const handleCardTouch = (cardId: string) => {
+    setActiveTouchCardId(cardId);
+    setTouchPulse(prev => prev + 1);
+  };
+
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono relative">
       <div className="scanlines" />
@@ -337,7 +344,16 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:gap-6 lg:gap-8">
-            {filteredDeals.map(deal => <DealCard key={`${deal.id}-${deal.rank}`} deal={deal} rank={deal.rank} />)}
+            {filteredDeals.map(deal => (
+              <DealCard
+                key={`${deal.id}-${deal.rank}`}
+                deal={deal}
+                rank={deal.rank}
+                activeTouchCardId={activeTouchCardId}
+                touchPulse={touchPulse}
+                onCardTouch={handleCardTouch}
+              />
+            ))}
           </div>
         )}
       </div>
