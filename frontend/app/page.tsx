@@ -45,6 +45,27 @@ const inferMerchant = (rawUrl: string | null | undefined, fallbackSource: string
   }
 };
 
+const categoryLooksValid = (category: string, name: string) => {
+  const n = name.toLowerCase();
+
+  const signals = {
+    fashion: /shirt|pants|jacket|dress|clothing|apparel|shoe|sneaker|hoodie|jeans|adidas|nike|under armour|puma/.test(n),
+    beauty: /makeup|lipstick|mascara|eyeliner|foundation|concealer|skincare|serum|moisturizer|cleanser|beauty|sephora|ulta|perfume|cologne|fragrance|eau de|deodorant/.test(n),
+    tech: /laptop|monitor|ssd|gpu|cpu|keyboard|mouse|headset|computer|electronics|tv|router|tablet|iphone|android|usb|charger|battery/.test(n),
+    home: /sofa|chair|table|lamp|bed|furniture|home decor|dresser|bookshelf|cabinet|mattress/.test(n),
+    kitchen: /kitchen|cookware|pan|pot|blender|mixer|knife|air fryer|toaster|coffee maker|instant pot/.test(n),
+    fitness: /fitness|gym|yoga|dumbbell|barbell|treadmill|protein|workout|weights|massage gun|exercise/.test(n),
+    toys: /lego|toy|doll|nerf|board game|puzzle|action figure|playset/.test(n),
+    books: /book|books|novel|kindle|paperback|hardcover|audiobook|ebook/.test(n)
+  } as const;
+
+  if (category === 'fashion' && /furniture|dresser|cabinet|bookshelf|sofa|chair|table|bed/.test(n)) return false;
+  if (category === 'beauty' && /playstation|xbox|nintendo|video game|gaming|furniture|dresser|cabinet|bookshelf|golf cart battery/.test(n)) return false;
+
+  const match = signals[category as keyof typeof signals];
+  return match ?? true;
+};
+
 const getOriginalPrice = (deal: Deal) => {
   if (deal.original_price) return deal.original_price;
   if (deal.sale_price && deal.discount_percent) {
@@ -145,6 +166,7 @@ export default function Home() {
 
           const category = normalizeCategory(deal.category);
           if (!TARGET_CATEGORY_SET.has(category)) return false;
+          if (!categoryLooksValid(category, deal.product_name || '')) return false;
 
           const originalPrice = getOriginalPrice(deal);
           return !!originalPrice && originalPrice >= 30;

@@ -31,7 +31,17 @@ const getCategoryIcon = (deal: Deal) => {
 
 export default function DealCard({ deal, rank }: DealCardProps) {
   const [imageError, setImageError] = React.useState(false);
-  const savings = deal.original_price ? (deal.original_price - deal.sale_price).toFixed(2) : null;
+
+  const computedOriginalPrice = React.useMemo(() => {
+    if (deal.original_price && deal.original_price > deal.sale_price) return deal.original_price;
+    if (deal.discount_percent && deal.discount_percent > 0 && deal.discount_percent < 100) {
+      const ratio = 1 - deal.discount_percent / 100;
+      if (ratio > 0) return deal.sale_price / ratio;
+    }
+    return null;
+  }, [deal.original_price, deal.sale_price, deal.discount_percent]);
+
+  const savings = computedOriginalPrice ? (computedOriginalPrice - deal.sale_price).toFixed(2) : null;
 
   return (
     <a href={deal.product_url} target="_blank" rel="noopener noreferrer"
@@ -67,7 +77,7 @@ export default function DealCard({ deal, rank }: DealCardProps) {
           )}
           <div className="flex items-end justify-between border-t border-[#252529] pt-3 mt-1">
             <div className="flex flex-col">
-              <span className="text-xs text-muted line-through">${deal.original_price?.toFixed(2)}</span>
+              <span className="text-xs text-muted line-through">{computedOriginalPrice ? `$${computedOriginalPrice.toFixed(2)}` : '—'}</span>
               <span className="text-xl font-bold text-terminal-green font-mono tracking-tight">${deal.sale_price.toFixed(2)}</span>
             </div>
             {savings && parseFloat(savings) > 0 && (
