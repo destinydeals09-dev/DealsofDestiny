@@ -304,7 +304,7 @@ export default function Home() {
           </div>
 
           <div className="absolute right-4 inset-y-0 flex items-center bunny-nod">
-            <Image src="/bunny-head.svg" alt="Rabbit head" width={36} height={36} className="pt-1" />
+            <Image src="/rabbit-head-v1.svg" alt="Rabbit head" width={36} height={36} className="pt-1 opacity-95 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]" />
           </div>
         </div>
       </header>
