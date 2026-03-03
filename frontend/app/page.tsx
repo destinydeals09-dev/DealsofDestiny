@@ -115,6 +115,18 @@ const buildDedupeKey = (deal: Deal) => {
   return semanticKey;
 };
 
+const normalizeImageKey = (url: string | null | undefined) => {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    u.search = '';
+    u.hash = '';
+    return u.toString().toLowerCase();
+  } catch {
+    return String(url).toLowerCase();
+  }
+};
+
 export default function Home() {
   const [shopAllDeals, setShopAllDeals] = useState<RankedDeal[]>([]);
   const [categoryDeals, setCategoryDeals] = useState<Record<string, RankedDeal[]>>({});
@@ -192,10 +204,19 @@ export default function Home() {
         const liveCategories: string[] = [];
 
         for (const category of TARGET_CATEGORIES) {
-          const ranked = dedupedPool
-            .filter(deal => normalizeCategory(deal.category) === category)
-            .slice(0, 10)
-            .map((deal, idx) => ({ ...deal, rank: idx + 1, dedupeKey: buildDedupeKey(deal) }));
+          const ranked: RankedDeal[] = [];
+          const seenImageKeys = new Set<string>();
+
+          for (const deal of dedupedPool) {
+            if (normalizeCategory(deal.category) !== category) continue;
+
+            const imageKey = normalizeImageKey(deal.image_url);
+            if (imageKey && seenImageKeys.has(imageKey)) continue;
+            if (imageKey) seenImageKeys.add(imageKey);
+
+            ranked.push({ ...deal, rank: ranked.length + 1, dedupeKey: buildDedupeKey(deal) });
+            if (ranked.length === 10) break;
+          }
 
           if (ranked.length === 10) {
             nextCategoryDeals[category] = ranked;
@@ -206,11 +227,18 @@ export default function Home() {
         // "Shop All": best 10 across all categories, no duplicates.
         const categoryPool = Object.values(nextCategoryDeals).flat().sort(compareDeals);
         const seen = new Set<string>();
+        const seenImageKeys = new Set<string>();
         const allTopTen: RankedDeal[] = [];
 
         for (const deal of categoryPool) {
           if (seen.has(deal.dedupeKey)) continue;
+
+          const imageKey = normalizeImageKey(deal.image_url);
+          if (imageKey && seenImageKeys.has(imageKey)) continue;
+
           seen.add(deal.dedupeKey);
+          if (imageKey) seenImageKeys.add(imageKey);
+
           allTopTen.push({ ...deal, rank: allTopTen.length + 1 });
           if (allTopTen.length === 10) break;
         }
