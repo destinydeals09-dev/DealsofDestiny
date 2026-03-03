@@ -113,7 +113,8 @@ function isSingleProductDeal(name = '') {
 
   const sitewidePatterns = [
     /\boutlet\b/, /\bclearance\b/, /\bsitewide\b/, /\bstorewide\b/, /\bup to\b/, /\bsale\b.*\boff\b/,
-    /\bdeals?\b/, /\bselect\b.*\b(apparel|items|products)\b/, /\bmembers?\b/, /\bgift card\b/
+    /\bdeals?\b/, /\bselect\b.*\b(apparel|items|products)\b/, /\bmembers?\b/, /\bgift card\b/,
+    /\badditional savings\b/, /\bextra\s+\d+%\s+off\b/, /\bon\s+select\b/
   ];
 
   if (sitewidePatterns.some(re => re.test(n))) return false;
