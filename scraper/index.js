@@ -67,6 +67,10 @@ async function runScraper(scraperFn, source) {
   return { source, status, count: deals.length, inserted, updated };
 }
 
+function limitDeals(deals, max = 40) {
+  return Array.isArray(deals) ? deals.slice(0, max) : [];
+}
+
 async function main() {
   console.log('🚀 Starting Deals of Destiny scraper...\n');
 
@@ -84,12 +88,16 @@ async function main() {
 
   // Run all scrapers in parallel
   const results = await Promise.allSettled([
-    // v2.0 Deal Aggregators (Priority - these work!)
-    scrapeSlickdeals().then(deals => runScraper(() => Promise.resolve(deals), 'slickdeals')),
-    // SCRAPED REDDIT REMOVED PER USER REQUEST
+    // Priority sources for today
+    scrapeAmazon().then(deals => runScraper(() => Promise.resolve(deals), 'amazon')),
+    scrapeWalmart().then(deals => runScraper(() => Promise.resolve(deals), 'walmart')),
+    scrapeNewegg().then(deals => runScraper(() => Promise.resolve(deals), 'newegg')),
+
+    // Keep aggregator but cap volume so it doesn't dominate
+    scrapeSlickdeals().then(deals => runScraper(() => Promise.resolve(limitDeals(deals, 35)), 'slickdeals')),
+
+    // Existing supporting sources
     scrapeSteam().then(deals => runScraper(() => Promise.resolve(deals), 'steam')),
-    
-    // v2.1 Beauty & Toys (Worth trying despite anti-bot)
     scrapeSephora().then(deals => runScraper(() => Promise.resolve(deals), 'sephora')),
     scrapeUlta().then(deals => runScraper(() => Promise.resolve(deals), 'ulta')),
     scrapeToysRUs().then(deals => runScraper(() => Promise.resolve(deals), 'toysrus')),
