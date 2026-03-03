@@ -108,6 +108,47 @@ function computeQualityScore(dealData) {
   return Math.round(score);
 }
 
+function isSingleProductDeal(name = '') {
+  const n = String(name).toLowerCase();
+
+  const sitewidePatterns = [
+    /\boutlet\b/, /\bclearance\b/, /\bsitewide\b/, /\bstorewide\b/, /\bup to\b/, /\bsale\b.*\boff\b/,
+    /\bdeals?\b/, /\bselect\b.*\b(apparel|items|products)\b/, /\bmembers?\b/, /\bgift card\b/
+  ];
+
+  if (sitewidePatterns.some(re => re.test(n))) return false;
+  return true;
+}
+
+function categoryLooksValid(category = '', name = '') {
+  const c = String(category).toLowerCase();
+  const n = String(name).toLowerCase();
+
+  const has = (re) => re.test(n);
+
+  const signals = {
+    beauty: has(/makeup|lipstick|mascara|eyeliner|foundation|concealer|skincare|serum|moisturizer|cleanser|beauty|sephora|ulta|perfume|cologne|fragrance|shampoo|conditioner|eau de|deodorant/),
+    fashion: has(/shirt|pants|jacket|dress|fashion|clothing|apparel|sneaker|shoe|hoodie|jeans|boots/),
+    tech: has(/laptop|monitor|ssd|gpu|cpu|keyboard|mouse|headset|computer|electronics|tv|router|charger|battery|pc|usb/),
+    home: has(/sofa|chair|table|lamp|bed|furniture|home decor|dresser|bookshelf|cabinet|mattress/),
+    kitchen: has(/kitchen|cookware|pan|pot|blender|mixer|knife|air fryer|toaster|coffee maker|instant pot/),
+    fitness: has(/fitness|gym|yoga|dumbbell|barbell|treadmill|protein|workout|weights|massage gun|exercise/),
+    toys: has(/lego|toy|doll|nerf|board game|puzzle|action figure|playset/),
+    books: has(/book|books|novel|kindle|paperback|hardcover|audiobook|ebook/),
+    gaming: has(/playstation|ps5|ps4|xbox|switch|nintendo|steam|video game|gaming|ghost of tsushima/)
+  };
+
+  // Explicit rejects user called out.
+  if (has(/golf cart battery/)) return false;
+  if (c === 'beauty' && (signals.gaming || signals.home || has(/dresser|cabinet|bookshelf|furniture|golf cart|battery/))) return false;
+
+  if (c in signals) {
+    return !!signals[c];
+  }
+
+  return true;
+}
+
 function passesQualityGate(dealData) {
   const salePrice = Number(dealData.sale_price || 0);
   const discount = Number(dealData.discount_percent || 0);
@@ -115,6 +156,8 @@ function passesQualityGate(dealData) {
   const hasUrl = !!dealData.product_url;
 
   if (!hasName || !hasUrl || salePrice <= 0) return false;
+  if (!isSingleProductDeal(dealData.product_name)) return false;
+  if (!categoryLooksValid(dealData.category, dealData.product_name)) return false;
 
   const lowerUrl = String(dealData.product_url || '').toLowerCase();
   if (BLOCKED_URL_PATTERNS.some(pattern => lowerUrl.includes(pattern))) return false;
