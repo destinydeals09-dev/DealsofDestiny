@@ -92,3 +92,47 @@ body {
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.holographic-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0.22;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 0, 128, 0.55),
+    rgba(0, 255, 255, 0.45),
+    rgba(57, 255, 20, 0.45),
+    rgba(255, 214, 10, 0.45),
+    rgba(179, 0, 255, 0.5),
+    rgba(255, 0, 128, 0.55)
+  );
+  mix-blend-mode: screen;
+  animation: holoShift 9s linear infinite;
+}
+
+.holographic-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg,
+    rgba(255,255,255,0) 20%,
+    rgba(255,255,255,0.08) 38%,
+    rgba(255,255,255,0.02) 48%,
+    rgba(255,255,255,0) 62%);
+  transform: translateX(-120%);
+  transition: transform 700ms ease;
+}
+
+.holographic-card:hover::after {
+  transform: translateX(120%);
+}
+
+@keyframes holoShift {
+  0% { filter: hue-rotate(0deg) saturate(1); }
+  50% { filter: hue-rotate(20deg) saturate(1.15); }
+  100% { filter: hue-rotate(0deg) saturate(1); }
+}
