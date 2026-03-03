@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import DealCard from '@/components/DealCard';
 import DealFilters, { FilterState } from '@/components/DealFilters';
+import AdSlot from '@/components/AdSlot';
 import type { Deal } from '@/lib/supabase';
 
 const TARGET_CATEGORIES = ['fashion', 'beauty', 'tech', 'home', 'kitchen', 'fitness', 'toys', 'books'] as const;
@@ -13,6 +14,7 @@ const PRIORITY_SOURCES = new Set(['amazon', 'walmart', 'newegg']);
 
 type RankedDeal = Deal & { rank: number; dedupeKey: string };
 type FashionView = 'men' | 'women';
+type FeedItem = { type: 'deal'; deal: RankedDeal } | { type: 'ad'; slotId: string };
 
 const normalizeCategory = (category: string | null | undefined) => (category || '').trim().toLowerCase();
 
@@ -368,6 +370,18 @@ export default function Home() {
     setTouchPulse(prev => prev + 1);
   };
 
+  const feedItems = useMemo<FeedItem[]>(() => {
+    const items: FeedItem[] = [];
+    filteredDeals.forEach((deal, index) => {
+      items.push({ type: 'deal', deal });
+      const position = index + 1;
+      if (position === 4 || position === 8) {
+        items.push({ type: 'ad', slotId: `infeed-${position}` });
+      }
+    });
+    return items;
+  }, [filteredDeals]);
+
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-terminal-green selection:text-black font-mono relative">
       <div className="scanlines" />
@@ -429,16 +443,23 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:gap-6 lg:gap-8">
-            {filteredDeals.map(deal => (
-              <DealCard
-                key={`${deal.id}-${deal.rank}`}
-                deal={deal}
-                rank={deal.rank}
-                activeTouchCardId={activeTouchCardId}
-                touchPulse={touchPulse}
-                onCardTouch={handleCardTouch}
-              />
-            ))}
+            {feedItems.map((item, idx) => {
+              if (item.type === 'ad') {
+                return <AdSlot key={`ad-${item.slotId}-${idx}`} slotId={item.slotId} />;
+              }
+
+              const deal = item.deal;
+              return (
+                <DealCard
+                  key={`${deal.id}-${deal.rank}`}
+                  deal={deal}
+                  rank={deal.rank}
+                  activeTouchCardId={activeTouchCardId}
+                  touchPulse={touchPulse}
+                  onCardTouch={handleCardTouch}
+                />
+              );
+            })}
           </div>
         )}
       </div>
