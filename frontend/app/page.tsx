@@ -216,7 +216,7 @@ export default function Home() {
         <div className="container mx-auto px-4 h-[58px] flex items-center justify-between relative">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-thin italic tracking-tight text-terminal-green glow-green">GRABBIT</h1>
-            <div className="flex flex-col text-[10px] leading-[1.1] text-white font-thin">
+            <div className="flex flex-col text-[10px] leading-[1.1] text-white font-thin italic">
               <span>The internet&apos;s best deals.</span>
               <span>Grab them before they&apos;re gone.</span>
             </div>
