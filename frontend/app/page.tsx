@@ -9,6 +9,7 @@ import type { Deal } from '@/lib/supabase';
 
 const TARGET_CATEGORIES = ['fashion', 'beauty', 'tech', 'home', 'kitchen', 'fitness', 'toys', 'books'] as const;
 const TARGET_CATEGORY_SET = new Set<string>(TARGET_CATEGORIES);
+const PRIORITY_SOURCES = new Set(['amazon', 'walmart', 'newegg']);
 
 type RankedDeal = Deal & { rank: number; dedupeKey: string };
 
@@ -90,7 +91,8 @@ const getDealPriority = (deal: Deal) => {
   const freshnessBonus = Math.max(0, 24 - freshnessHours);
   const qualityBase = deal.quality_score ?? 0;
 
-  const score = (discountPercent * 2.5) + (savings * 0.15) + freshnessBonus + qualityBase;
+  const sourceBonus = PRIORITY_SOURCES.has((deal.source || '').toLowerCase()) ? 35 : 0;
+  const score = (discountPercent * 2.5) + (savings * 0.15) + freshnessBonus + qualityBase + sourceBonus;
 
   return { savings, originalPrice, discountPercent, score };
 };
