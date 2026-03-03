@@ -31,36 +31,45 @@ const getCategoryIcon = (deal: Deal) => {
 
 export default function DealCard({ deal, rank }: DealCardProps) {
   const [imageError, setImageError] = React.useState(false);
-  const [shimmerPulse, setShimmerPulse] = React.useState(0);
-  const isTouchTrackingRef = React.useRef(false);
-
-  const triggerTouchShimmer = React.useCallback(() => {
-    setShimmerPulse((prev) => prev + 1);
-  }, []);
-
-  const endTrackedTouch = React.useCallback(() => {
-    if (!isTouchTrackingRef.current) return;
-    isTouchTrackingRef.current = false;
-    triggerTouchShimmer();
-  }, [triggerTouchShimmer]);
-
-  const handleTouchStart = React.useCallback(() => {
-    isTouchTrackingRef.current = true;
-    triggerTouchShimmer();
-  }, [triggerTouchShimmer]);
+  const [isViewportCentered, setIsViewportCentered] = React.useState(false);
+  const cardRef = React.useRef<HTMLAnchorElement | null>(null);
 
   React.useEffect(() => {
-    const onTouchEnd = () => endTrackedTouch();
-    const onTouchCancel = () => endTrackedTouch();
+    const updateViewportCenterState = () => {
+      const card = cardRef.current;
+      if (!card) return;
 
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', onTouchCancel, { passive: true });
+      const rect = card.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const fullyVisible = rect.top >= 0 && rect.bottom <= viewportHeight;
+
+      const cardCenter = rect.top + rect.height / 2;
+      const viewportCenter = viewportHeight / 2;
+      const centerTolerance = viewportHeight * 0.18;
+      const inCenterBand = Math.abs(cardCenter - viewportCenter) <= centerTolerance;
+
+      setIsViewportCentered(fullyVisible && inCenterBand);
+    };
+
+    let rafId: number | null = null;
+    const queueUpdate = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        updateViewportCenterState();
+      });
+    };
+
+    queueUpdate();
+    window.addEventListener('scroll', queueUpdate, { passive: true });
+    window.addEventListener('resize', queueUpdate);
 
     return () => {
-      window.removeEventListener('touchend', onTouchEnd);
-      window.removeEventListener('touchcancel', onTouchCancel);
+      window.removeEventListener('scroll', queueUpdate);
+      window.removeEventListener('resize', queueUpdate);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-  }, [endTrackedTouch]);
+  }, []);
 
   const computedOriginalPrice = React.useMemo(() => {
     if (deal.original_price && deal.original_price > deal.sale_price) return deal.original_price;
@@ -74,12 +83,13 @@ export default function DealCard({ deal, rank }: DealCardProps) {
   const savings = computedOriginalPrice ? (computedOriginalPrice - deal.sale_price).toFixed(2) : null;
 
   return (
-    <a href={deal.product_url} target="_blank" rel="noopener noreferrer"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={endTrackedTouch}
-      onTouchCancel={endTrackedTouch}
-      className="group holographic-card block bg-surface border border-[#252529] hover:border-terminal-green hover:shadow-[0_0_20px_rgba(57,255,20,0.15)] transition-all duration-200 relative overflow-hidden">
-      {shimmerPulse > 0 && <span key={shimmerPulse} className="touch-shimmer-overlay" />}
+    <a
+      ref={cardRef}
+      href={deal.product_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`group holographic-card block bg-surface border border-[#252529] hover:border-terminal-green hover:shadow-[0_0_20px_rgba(57,255,20,0.15)] transition-all duration-200 relative overflow-hidden ${isViewportCentered ? 'viewport-shimmer-active' : ''}`}
+    >
       <div className="absolute inset-0 bg-terminal-green/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
 
       <div className="relative h-48 bg-black/50 border-b border-[#252529] flex items-center justify-center overflow-hidden">

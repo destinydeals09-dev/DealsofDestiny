@@ -118,34 +118,22 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  opacity: 0;
   background: linear-gradient(115deg,
     rgba(255,255,255,0) 20%,
-    rgba(255,255,255,0.08) 38%,
-    rgba(255,255,255,0.02) 48%,
+    rgba(255,255,255,0.12) 38%,
+    rgba(255,255,255,0.03) 48%,
     rgba(255,255,255,0) 62%);
   transform: translateX(-120%);
-  transition: transform 700ms ease;
+  transition: opacity 220ms ease;
 }
 
-.holographic-card:hover::after {
-  transform: translateX(120%);
+.holographic-card.viewport-shimmer-active::after {
+  opacity: 1;
+  animation: centerViewportShimmer 1.1s linear infinite;
 }
 
-.touch-shimmer-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 30;
-  background: linear-gradient(115deg,
-    rgba(255,255,255,0) 20%,
-    rgba(255,255,255,0.16) 38%,
-    rgba(255,255,255,0.04) 48%,
-    rgba(255,255,255,0) 62%);
-  transform: translateX(-120%);
-  animation: touchShimmerSweep 700ms ease;
-}
-
-@keyframes touchShimmerSweep {
+@keyframes centerViewportShimmer {
   from { transform: translateX(-120%); }
   to { transform: translateX(120%); }
 }
