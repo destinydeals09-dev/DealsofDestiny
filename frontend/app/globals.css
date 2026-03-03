@@ -66,6 +66,17 @@ body {
   text-shadow: 0 0 10px var(--color-terminal-green), 0 0 20px rgba(57,255,20,.25);
 }
 
+.matrix-title {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 6px rgba(57,255,20,0.9),
+    0 0 14px rgba(57,255,20,0.45),
+    1px 0 0 rgba(0,255,170,0.35);
+}
+
 .bunny-nod {
   animation: bunnyNod 4s ease-in-out infinite;
   transform-origin: 65% 60%;
