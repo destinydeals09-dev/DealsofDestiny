@@ -121,6 +121,30 @@ const buildDedupeKey = (deal: Deal) => {
   return semanticKey;
 };
 
+const inferProductType = (category: string, name: string) => {
+  const n = (name || '').toLowerCase();
+
+  if (category === 'toys') {
+    if (/lego|duplo|technic/.test(n)) return 'lego';
+    if (/puzzle|jigsaw/.test(n)) return 'puzzle';
+    if (/board game|card game|monopoly|uno|catan/.test(n)) return 'board-game';
+    if (/action figure|figurine|funko|transformers|barbie|doll/.test(n)) return 'figure-doll';
+    if (/plush|stuffed/.test(n)) return 'plush';
+    if (/blaster|nerf|rc |remote control|drone/.test(n)) return 'rc-blaster';
+    return 'other-toy';
+  }
+
+  if (category === 'fashion') {
+    if (/shoe|sneaker|boot|sandals/.test(n)) return 'footwear';
+    if (/shirt|tee|top|blouse|polo/.test(n)) return 'tops';
+    if (/pants|jeans|shorts|leggings/.test(n)) return 'bottoms';
+    if (/jacket|coat|hoodie|sweater/.test(n)) return 'outerwear';
+    return 'other-fashion';
+  }
+
+  return 'default';
+};
+
 const inferFashionSegment = (name: string) => {
   const n = (name || '').toLowerCase();
   const womenSignals = /(women|woman|ladies|lady|girls|female|maternity|bra|legging|dress|skirt|blouse)/.test(n);
@@ -241,8 +265,9 @@ export default function Home() {
           const ranked: RankedDeal[] = [];
           const seenImageKeys = new Set<string>();
           const usedKeys = new Set<string>();
+          const typeCounts = new Map<string, number>();
 
-          const appendFromPool = (pool: Deal[]) => {
+          const appendFromPool = (pool: Deal[], enforceTypeCap: boolean) => {
             for (const deal of pool) {
               if (ranked.length >= 10) break;
               if (normalizeCategory(deal.category) !== category) continue;
@@ -250,17 +275,24 @@ export default function Home() {
               const dKey = buildDedupeKey(deal);
               if (usedKeys.has(dKey)) continue;
 
+              const typeKey = inferProductType(category, deal.product_name || '');
+              const currentTypeCount = typeCounts.get(typeKey) || 0;
+              const typeCap = category === 'toys' ? 3 : 10;
+              if (enforceTypeCap && currentTypeCount >= typeCap) continue;
+
               const imageKey = normalizeImageKey(deal.image_url);
               if (imageKey && seenImageKeys.has(imageKey)) continue;
 
               usedKeys.add(dKey);
+              typeCounts.set(typeKey, currentTypeCount + 1);
               if (imageKey) seenImageKeys.add(imageKey);
               ranked.push({ ...deal, rank: ranked.length + 1, dedupeKey: dKey });
             }
           };
 
-          appendFromPool(strictPool);
-          if (ranked.length < 10) appendFromPool(fallbackPool);
+          appendFromPool(strictPool, true);
+          if (ranked.length < 10) appendFromPool(fallbackPool, true);
+          if (ranked.length < 10) appendFromPool(fallbackPool, false);
 
           nextCategoryDeals[category] = ranked;
         }
