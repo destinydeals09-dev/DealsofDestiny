@@ -406,8 +406,8 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl matrix-title text-terminal-green">GRABBIT</h1>
             <div className="flex flex-col text-[10px] leading-[1.1] text-white font-thin italic">
-              <span>Top 10 best of the best deals.</span>
-              <span>Updated daily.</span>
+              <span>The internet&apos;s best deals.</span>
+              <span>Grab them before they&apos;re gone!</span>
             </div>
           </div>
 
