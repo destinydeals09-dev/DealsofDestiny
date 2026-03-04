@@ -81,7 +81,7 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
           <div className="absolute top-0 right-0 bg-terminal-green text-black font-bold font-mono text-xs px-2 py-1 border-l border-b border-black">-{deal.discount_percent}%</div>
         )}
 
-        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/80 backdrop-blur border border-[#252529] text-muted text-[10px] font-mono font-bold px-2 py-0.5 uppercase tracking-wider">
+        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/90 backdrop-blur border border-terminal-green/40 text-foreground text-xs font-mono font-bold px-2 py-0.5 uppercase tracking-wider">
           <span className="text-terminal-green">{sourceLogos[deal.source] || '>'}</span>
           {getSourceDisplay(deal.source)}
         </div>
