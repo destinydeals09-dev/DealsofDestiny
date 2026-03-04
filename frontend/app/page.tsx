@@ -16,6 +16,7 @@ type RankedDeal = Deal & { rank: number; dedupeKey: string };
 type FashionView = 'men' | 'women';
 type FashionSegment = 'men' | 'women' | 'unisex';
 type FeedItem = { type: 'deal'; deal: RankedDeal } | { type: 'ad'; slotId: string };
+type FashionSegmentDeals = Record<FashionView, RankedDeal[]>;
 
 const normalizeCategory = (category: string | null | undefined) => (category || '').trim().toLowerCase();
 
@@ -178,6 +179,7 @@ const normalizeImageKey = (url: string | null | undefined) => {
 export default function Home() {
   const [shopAllDeals, setShopAllDeals] = useState<RankedDeal[]>([]);
   const [categoryDeals, setCategoryDeals] = useState<Record<string, RankedDeal[]>>({});
+  const [fashionDealsBySegment, setFashionDealsBySegment] = useState<FashionSegmentDeals>({ men: [], women: [] });
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     category: '',
@@ -187,7 +189,7 @@ export default function Home() {
   });
   const [availableCategories, setAvailableCategories] = useState<string[]>([...TARGET_CATEGORIES]);
   const [loading, setLoading] = useState(true);
-  const [fashionView, setFashionView] = useState<FashionView>('men');
+  const [fashionView, setFashionView] = useState<FashionView>('women');
   const [activeTouchCardId, setActiveTouchCardId] = useState<string | null>(null);
   const [touchPulse, setTouchPulse] = useState(0);
 
@@ -309,6 +311,44 @@ export default function Home() {
           nextCategoryDeals[category] = ranked;
         }
 
+        const fashionCandidates = [...strictPool, ...fallbackPool]
+          .filter(deal => normalizeCategory(deal.category) === 'fashion')
+          .sort(compareDeals);
+
+        const buildFashionList = (segment: FashionView, blockedKeys = new Set<string>()) => {
+          const ranked: RankedDeal[] = [];
+          const seenImageKeys = new Set<string>();
+          const usedKeys = new Set<string>(blockedKeys);
+
+          const appendFashion = (allowUnisex: boolean) => {
+            for (const deal of fashionCandidates) {
+              if (ranked.length >= 10) break;
+              const segmentType = inferFashionSegment(deal.product_name || '');
+              if (segmentType !== segment && !(allowUnisex && segmentType === 'unisex')) continue;
+
+              const dKey = buildDedupeKey(deal);
+              if (usedKeys.has(dKey)) continue;
+
+              const imageKey = normalizeImageKey(deal.image_url);
+              if (imageKey && seenImageKeys.has(imageKey)) continue;
+
+              usedKeys.add(dKey);
+              if (imageKey) seenImageKeys.add(imageKey);
+              ranked.push({ ...deal, rank: ranked.length + 1, dedupeKey: dKey });
+            }
+          };
+
+          appendFashion(false);
+          if (ranked.length < 10) appendFashion(true);
+
+          return { ranked, usedKeys };
+        };
+
+        const womenBuilt = buildFashionList('women');
+        const menBuilt = buildFashionList('men', womenBuilt.usedKeys);
+
+        setFashionDealsBySegment({ women: womenBuilt.ranked.slice(0, 10), men: menBuilt.ranked.slice(0, 10) });
+
         // "Shop All": best 10 across all categories, no duplicates.
         const categoryPool = Object.values(nextCategoryDeals).flat().sort(compareDeals);
         const seen = new Set<string>();
@@ -344,7 +384,9 @@ export default function Home() {
   }, []);
 
   const filteredDeals = useMemo(() => {
-    const base = filters.category ? (categoryDeals[filters.category] || []) : shopAllDeals;
+    const base = filters.category
+      ? (filters.category === 'fashion' ? (fashionDealsBySegment[fashionView] || []) : (categoryDeals[filters.category] || []))
+      : shopAllDeals;
     let next = [...base];
 
     if (filters.search) {
@@ -376,7 +418,7 @@ export default function Home() {
     }
 
     return next;
-  }, [filters, categoryDeals, shopAllDeals, fashionView]);
+  }, [filters, categoryDeals, shopAllDeals, fashionDealsBySegment, fashionView]);
 
   const handleCardTouch = (cardId: string) => {
     setActiveTouchCardId(cardId);
