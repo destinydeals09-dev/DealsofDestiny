@@ -14,6 +14,7 @@ const PRIORITY_SOURCES = new Set(['amazon', 'walmart', 'newegg']);
 
 type RankedDeal = Deal & { rank: number; dedupeKey: string };
 type FashionView = 'men' | 'women';
+type FashionSegment = 'men' | 'women' | 'unisex';
 type FeedItem = { type: 'deal'; deal: RankedDeal } | { type: 'ad'; slotId: string };
 
 const normalizeCategory = (category: string | null | undefined) => (category || '').trim().toLowerCase();
@@ -147,14 +148,19 @@ const inferProductType = (category: string, name: string) => {
   return 'default';
 };
 
-const inferFashionSegment = (name: string) => {
+const inferFashionSegment = (name: string): FashionSegment => {
   const n = (name || '').toLowerCase();
-  const womenSignals = /(women|woman|ladies|lady|girls|female|maternity|bra|legging|dress|skirt|blouse)/.test(n);
-  const menSignals = /(men|man's|mens|gentlemen|guys|male|boys|boxer|cargo|polo|oxford)/.test(n);
+  const womenSignals = /(women|woman|ladies|lady|girls|female|maternity|bra|legging|dress|skirt|blouse|heels|handbag)/.test(n);
+  const menSignals = /(\bmen\b|man's|mens|gentlemen|guys|male|boys|boxer|cargo|polo|oxford|tie|wallet)/.test(n);
 
   if (womenSignals && !menSignals) return 'women';
   if (menSignals && !womenSignals) return 'men';
-  return 'men';
+  return 'unisex';
+};
+
+const looksLikeBeautyDeal = (name: string | null | undefined) => {
+  const n = (name || '').toLowerCase();
+  return /makeup|lipstick|mascara|eyeliner|foundation|concealer|skincare|serum|moisturizer|cleanser|beauty|sephora|ulta|perfume|cologne|fragrance|deodorant|face wash|sunscreen/.test(n);
 };
 
 const normalizeImageKey = (url: string | null | undefined) => {
@@ -272,7 +278,11 @@ export default function Home() {
           const appendFromPool = (pool: Deal[], enforceTypeCap: boolean) => {
             for (const deal of pool) {
               if (ranked.length >= 10) break;
-              if (normalizeCategory(deal.category) !== category) continue;
+
+              const normalizedDealCategory = normalizeCategory(deal.category);
+              const categoryMatch = normalizedDealCategory === category;
+              const beautyFallbackMatch = category === 'beauty' && looksLikeBeautyDeal(deal.product_name);
+              if (!categoryMatch && !beautyFallbackMatch) continue;
 
               const dKey = buildDedupeKey(deal);
               if (usedKeys.has(dKey)) continue;
@@ -345,7 +355,10 @@ export default function Home() {
     if (filters.source) next = next.filter(deal => deal.source === filters.source);
     if (filters.minDiscount > 0) next = next.filter(deal => (deal.discount_percent ?? 0) >= filters.minDiscount);
     if (filters.category === 'fashion') {
-      next = next.filter(deal => inferFashionSegment(deal.product_name) === fashionView);
+      next = next.filter(deal => {
+        const segment = inferFashionSegment(deal.product_name);
+        return segment === fashionView || segment === 'unisex';
+      });
     }
 
     // Keep rank-first behavior by default, allow alternate views for debugging.
