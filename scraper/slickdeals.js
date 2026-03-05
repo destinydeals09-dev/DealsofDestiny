@@ -40,6 +40,47 @@ const SLICKDEALS_RSS_FEEDS = [
 const MIN_ORIGINAL_PRICE = 15; // Lowered again to increase category volume
 const MIN_DISCOUNT_PCT = 15; // Lowered again to increase category volume
 
+const TARGET_CATEGORIES = new Set(['fashion', 'beauty', 'tech', 'home', 'kitchen', 'fitness', 'toys', 'books']);
+
+function inferCategoryFromText(text) {
+  const t = (text || '').toLowerCase();
+
+  const has = (re) => re.test(t);
+
+  const scoring = {
+    beauty: 0,
+    fashion: 0,
+    tech: 0,
+    home: 0,
+    kitchen: 0,
+    fitness: 0,
+    toys: 0,
+    books: 0,
+    gaming: 0
+  };
+
+  if (has(/makeup|lipstick|mascara|eyeliner|foundation|concealer|skincare|serum|moisturizer|cleanser|beauty|sephora|ulta|perfume|cologne|fragrance|shampoo|conditioner/)) scoring.beauty += 3;
+  if (has(/shirt|pants|jacket|dress|fashion|clothing|apparel|sneaker|shoe|adidas|nike|under armour|hoodie|jeans/)) scoring.fashion += 3;
+  if (has(/laptop|monitor|ssd|gpu|cpu|keyboard|mouse|headset|tech|computer|electronics|router|tablet|iphone|android|tv|soundbar/)) scoring.tech += 3;
+  if (has(/sofa|chair|table|lamp|bed|furniture|home decor|dresser|bookshelf|cabinet|mattress/)) scoring.home += 3;
+  if (has(/kitchen|cookware|pan|pot|blender|mixer|knife|air fryer|toaster|coffee maker|instant pot/)) scoring.kitchen += 3;
+  if (has(/fitness|gym|yoga|dumbbell|barbell|treadmill|protein|workout|weights|resistance band/)) scoring.fitness += 3;
+  if (has(/lego|toy|doll|nerf|board game|puzzle|action figure|playset/)) scoring.toys += 3;
+  if (has(/book|books|novel|kindle|paperback|hardcover|audiobook|ebook/)) scoring.books += 3;
+  if (has(/game|gaming|console|ps5|ps4|xbox|switch|steam|nintendo|playstation/)) scoring.gaming += 3;
+
+  // Anti-signals to avoid category contamination (e.g. games in beauty)
+  if (scoring.gaming > 0) scoring.beauty -= 2;
+  if (scoring.home > 0) scoring.beauty -= 1;
+  if (scoring.tech > 0) scoring.beauty -= 1;
+
+  const ranked = Object.entries(scoring).sort((a, b) => b[1] - a[1]);
+  const [topCategory, topScore] = ranked[0];
+
+  if (!topCategory || topScore <= 0) return null;
+  return topCategory;
+}
+
 /**
  * Resolve final URL from a redirect link (HEAD request)
  */
@@ -67,6 +108,43 @@ async function resolveFinalUrl(url) {
     return response?.request?.res?.responseUrl || url;
   } catch (err) {
     return url;
+  }
+}
+
+async function fetchRetailerPricing(productUrl) {
+  if (!productUrl || !productUrl.startsWith('http')) return null;
+
+  try {
+    const response = await axios.get(productUrl, {
+      maxRedirects: 5,
+      timeout: 7000,
+      headers: browserHeaders,
+      validateStatus: status => status >= 200 && status < 400
+    });
+
+    const finalUrl = response?.request?.res?.responseUrl || productUrl;
+    const html = String(response.data || '');
+
+    let salePrice = 0;
+    let originalPrice = 0;
+
+    if (finalUrl.includes('walmart.com')) {
+      const currentMatches = [...html.matchAll(/"currentPrice"\s*:\s*\{[^}]*"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/g)].map(m => Number(m[1]));
+      const wasMatches = [...html.matchAll(/"wasPrice"\s*:\s*\{[^}]*"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/g)].map(m => Number(m[1]));
+      salePrice = currentMatches.find(n => Number.isFinite(n) && n > 0) || 0;
+      originalPrice = wasMatches.find(n => Number.isFinite(n) && n > 0) || 0;
+    }
+
+    if (!salePrice || salePrice <= 0) return null;
+
+    let discountPct = 0;
+    if (originalPrice > salePrice) {
+      discountPct = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
+    }
+
+    return { salePrice, originalPrice, discountPct, finalUrl };
+  } catch {
+    return null;
   }
 }
 
@@ -241,22 +319,32 @@ export async function scrapeSlickdeals() {
           // Ignore
         }
 
-        // Filter: High Ticket Items Only ($20+ original price)
-        // Calculate original price if missing
+        // Must resolve to a direct merchant URL
+        if (!dealLink || !dealLink.startsWith('http') || dealLink.includes('slickdeals.net')) {
+          continue;
+        }
+
+        // Pull retailer-direct pricing when possible (critical for was/current correctness)
+        const retailerPricing = await fetchRetailerPricing(dealLink);
+        const effectivePrice = retailerPricing?.salePrice || price || 0;
+        if (retailerPricing?.discountPct) discountPct = retailerPricing.discountPct;
+
+        // Filter: High Ticket Items Only
         let originalPrice = 0;
-        if (price > 0 && discountPct > 0) {
-          originalPrice = price / (1 - (discountPct / 100));
-        } else if (price > 20) {
-          originalPrice = price; // Assume original was at least the sale price
+        if (retailerPricing?.originalPrice && retailerPricing.originalPrice > effectivePrice) {
+          originalPrice = retailerPricing.originalPrice;
+        } else if (effectivePrice > 0 && discountPct > 0) {
+          originalPrice = effectivePrice / (1 - (discountPct / 100));
+        } else if (effectivePrice > 20) {
+          originalPrice = effectivePrice;
         }
 
         if (originalPrice < MIN_ORIGINAL_PRICE) {
           continue;
         }
 
-        // Filter: Only deals with 20%+ discount
-        if (!discountPct && price > 0) {
-          // If discount % wasn't parsed, assume good deal if it's on Frontpage
+        // Filter: Only deals with minimum discount
+        if (!discountPct && effectivePrice > 0) {
           discountPct = 25;
         }
 
@@ -264,49 +352,49 @@ export async function scrapeSlickdeals() {
           continue;
         }
 
-        // Must resolve to a direct merchant URL
-        if (!dealLink || !dealLink.startsWith('http') || dealLink.includes('slickdeals.net')) {
-          continue;
-        }
-
         // Pull product image from the destination merchant page (not Slickdeals CDN)
-        const imageUrl = await fetchMerchantImage(dealLink);
+        const imageUrl = await fetchMerchantImage(retailerPricing?.finalUrl || dealLink);
 
         // Strict requirement: no merchant image => no product
         if (!imageUrl) {
           continue;
         }
 
-        // Categorize based on keywords OR feed source
+        // Strict category inference to prevent cross-category pollution.
+        const inferredCategory = inferCategoryFromText(`${title} ${description}`);
         let category = feedSource.category;
 
-        // Refine 'general' category if possible
-        if (category === 'general') {
-            const text = (title + ' ' + description).toLowerCase();
-            if (text.match(/lego|toy|doll|nerf|board game|puzzle/)) category = 'toys';
-            else if (text.match(/makeup|lipstick|shampoo|conditioner|perfume|cologne|skincare|lotion|beauty|sephora|ulta/)) category = 'beauty';
-            else if (text.match(/shirt|pants|jacket|shoe|sneaker|dress|fashion|clothing|adidas|nike/)) category = 'fashion';
-            else if (text.match(/laptop|monitor|ssd|gpu|cpu|keyboard|mouse|headset|tech|computer|electronics/)) category = 'tech';
-            else if (text.match(/sofa|chair|table|lamp|bed|furniture|home decor/)) category = 'home';
-            else if (text.match(/kitchen|cook|pan|pot|blender|mixer|knife/)) category = 'kitchen';
-            else if (text.match(/fitness|gym|yoga|dumbbell|barbell|treadmill|protein|workout/)) category = 'fitness';
-            else if (text.match(/book|books|novel|kindle|paperback|hardcover|audiobook|ebook/)) category = 'books';
-            else if (text.match(/game|console|ps5|xbox|switch|steam|nintendo|playstation/)) category = 'gaming';
+        if (feedSource.category === 'general') {
+          // For general feed, only keep confidently categorized target-category deals.
+          if (!inferredCategory || !TARGET_CATEGORIES.has(inferredCategory)) {
+            continue;
+          }
+          category = inferredCategory;
+        } else {
+          // For category-specific feeds, require inferred category to match requested category.
+          // This blocks items like video games showing up in beauty.
+          if (!inferredCategory || inferredCategory !== feedSource.category) {
+            continue;
+          }
+          category = inferredCategory;
         }
 
         // Build deal object
         const deal = {
           product_name: title.trim(),
-          price: price || 0,
+          sale_price: effectivePrice,
+          original_price: originalPrice > effectivePrice ? originalPrice : null,
           discount_pct: discountPct,
-          product_url: dealLink, // Use the direct deal link
+          product_url: retailerPricing?.finalUrl || dealLink,
           image_url: imageUrl,
           source: 'slickdeals',
-          source_url: link, // Keep the thread link as metadata
+          source_url: link,
           category: category,
-          expires_at: null, // Could parse from description if needed
-          quality_score: 100, // Slickdeals frontpage is high quality
-          is_active: true
+          expires_at: null,
+          quality_score: retailerPricing ? 100 : 90,
+          is_active: true,
+          is_verified: !!retailerPricing,
+          source_confidence: retailerPricing ? 95 : 75
         };
 
         deals.push(deal);

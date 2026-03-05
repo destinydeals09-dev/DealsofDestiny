@@ -20,6 +20,95 @@ function extractPrice(text) {
   return m ? parseFloat(m[1]) : 0;
 }
 
+function parseJsonNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function pickFirstPositive(values = []) {
+  for (const v of values) {
+    const n = parseJsonNumber(v);
+    if (n > 0) return n;
+  }
+  return 0;
+}
+
+async function fetchRetailerPricing(productUrl) {
+  if (!productUrl || !productUrl.startsWith('http')) return null;
+
+  try {
+    const res = await axios.get(productUrl, {
+      maxRedirects: 6,
+      timeout: 7000,
+      validateStatus: s => s >= 200 && s < 400,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
+
+    const finalUrl = res?.request?.res?.responseUrl || productUrl;
+    const html = String(res.data || '');
+    const $ = cheerio.load(html);
+
+    // Generic sources (JSON-LD + meta)
+    let salePrice = pickFirstPositive([
+      $('meta[itemprop="price"]').attr('content'),
+      $('meta[property="product:price:amount"]').attr('content'),
+      $('meta[property="og:price:amount"]').attr('content'),
+      $('meta[name="twitter:data1"]').attr('content')
+    ]);
+
+    let originalPrice = 0;
+
+    // JSON-LD offers parsing
+    $('script[type="application/ld+json"]').each((_, el) => {
+      if (salePrice > 0 && originalPrice > 0) return;
+      const raw = $(el).html() || '';
+      try {
+        const json = JSON.parse(raw);
+        const entries = Array.isArray(json) ? json : [json];
+        for (const entry of entries) {
+          const offers = entry?.offers;
+          const offerList = Array.isArray(offers) ? offers : (offers ? [offers] : []);
+          for (const offer of offerList) {
+            if (!salePrice) {
+              salePrice = pickFirstPositive([offer?.price, offer?.lowPrice]);
+            }
+            if (!originalPrice) {
+              originalPrice = pickFirstPositive([offer?.highPrice, offer?.listPrice]);
+            }
+          }
+        }
+      } catch {
+        // ignore malformed json-ld
+      }
+    });
+
+    // Walmart-specific extraction (most reliable for "was" pricing)
+    if (finalUrl.includes('walmart.com')) {
+      const currentMatches = [...html.matchAll(/"currentPrice"\s*:\s*\{[^}]*"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/g)].map(m => m[1]);
+      const wasMatches = [...html.matchAll(/"wasPrice"\s*:\s*\{[^}]*"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/g)].map(m => m[1]);
+      const listMatches = [...html.matchAll(/"listPrice"\s*:\s*\{[^}]*"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/g)].map(m => m[1]);
+
+      salePrice = pickFirstPositive([salePrice, ...currentMatches]);
+      originalPrice = pickFirstPositive([originalPrice, ...wasMatches, ...listMatches]);
+    }
+
+    if (!salePrice || salePrice <= 0) return null;
+    if (!originalPrice || originalPrice < salePrice) originalPrice = 0;
+
+    let discountPct = 0;
+    if (originalPrice > salePrice) {
+      discountPct = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
+    }
+
+    return { salePrice, originalPrice, discountPct, finalUrl };
+  } catch {
+    return null;
+  }
+}
+
 function extractDiscount(text) {
   const m = String(text || '').match(/(\d+)%\s*off|save\s*(\d+)%/i);
   const pct = parseInt(m?.[1] || m?.[2] || '0', 10);
@@ -83,21 +172,30 @@ export async function scrapeMerchantFromSlickdeals({ source, hostMatch, minPrice
       if (!directUrl || !hostMatch.some(host => directUrl.includes(host))) continue;
 
       const text = `${title} ${item.description || ''}`;
-      const price = extractPrice(text);
-      if (price < minPrice) continue;
+      const retailerPricing = await fetchRetailerPricing(directUrl);
+
+      // Prefer retailer-direct price. Fall back to parsed copy only if direct pull fails.
+      const salePrice = retailerPricing?.salePrice || extractPrice(text);
+      if (salePrice < minPrice) continue;
+
+      const originalPrice = retailerPricing?.originalPrice || 0;
+      const discountPct = retailerPricing?.discountPct || extractDiscount(text);
 
       deals.push({
         product_name: title.trim(),
-        price,
-        discount_pct: extractDiscount(text),
-        product_url: directUrl,
+        sale_price: salePrice,
+        original_price: originalPrice > salePrice ? originalPrice : null,
+        discount_pct: discountPct,
+        product_url: retailerPricing?.finalUrl || directUrl,
         image_url: null,
         source,
         source_url: item.link || directUrl,
         category,
         expires_at: null,
-        quality_score: 88,
-        is_active: true
+        quality_score: retailerPricing ? 92 : 84,
+        is_active: true,
+        is_verified: !!retailerPricing,
+        source_confidence: retailerPricing ? 95 : 70
       });
     }
   }
