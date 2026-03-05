@@ -13,12 +13,28 @@ interface DealCardProps {
 }
 
 const sourceLogos: Record<string, string> = {
-  bestbuy: '🛒', newegg: '🖥️', steam: '🎮', amazon: '📦', microcenter: '💻',
-  gamestop: '🎮', target: '🎯', walmart: '🛒', bhphoto: '📷', sephora: '💄',
-  ulta: '💅', toysrus: '🧸', reddit_buildapcsales: '🎮', reddit_GameDeals: '🎮', slickdeals: '🔥'
+  'bestbuy.com': '🛒',
+  'newegg.com': '🖥️',
+  'store.steampowered.com': '🎮',
+  'amazon.com': '📦',
+  'microcenter.com': '💻',
+  'gamestop.com': '🎮',
+  'target.com': '🎯',
+  'walmart.com': '🛒',
+  'bhphotovideo.com': '📷',
+  'sephora.com': '💄',
+  'ulta.com': '💅',
+  'toysrus.com': '🧸'
 };
 
-const getSourceDisplay = (source: string) => source.startsWith('reddit_') ? `r/${source.replace('reddit_', '')}` : source;
+const getMerchantDomain = (productUrl: string, fallbackSource: string) => {
+  try {
+    const hostname = new URL(productUrl).hostname.toLowerCase().replace(/^www\./, '');
+    return hostname || fallbackSource;
+  } catch {
+    return fallbackSource;
+  }
+};
 
 const getCategoryIcon = (deal: Deal) => {
   const source = deal.source.toLowerCase();
@@ -53,6 +69,11 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
     return null;
   }, [deal.original_price, deal.sale_price, deal.discount_percent]);
 
+  const merchantDomain = React.useMemo(
+    () => getMerchantDomain(deal.product_url, deal.source),
+    [deal.product_url, deal.source]
+  );
+
   return (
     <a
       href={deal.product_url}
@@ -81,9 +102,9 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
           <div className="absolute top-0 right-0 bg-terminal-green text-black font-bold font-mono text-xs px-2 py-1 border-l border-b border-black">-{deal.discount_percent}%</div>
         )}
 
-        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/90 backdrop-blur border border-terminal-green/40 text-foreground text-xs font-mono font-bold px-2 py-0.5 uppercase tracking-wider">
-          <span className="text-terminal-green">{sourceLogos[deal.source] || '>'}</span>
-          {getSourceDisplay(deal.source)}
+        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/90 backdrop-blur border border-terminal-green/40 text-foreground text-xs font-mono font-bold px-2 py-0.5 tracking-wider">
+          <span className="text-terminal-green">{sourceLogos[merchantDomain] || '🔗'}</span>
+          {merchantDomain}
         </div>
       </div>
 
