@@ -160,8 +160,10 @@ function passesQualityGate(dealData) {
   const discount = Number(dealData.discount_percent || 0);
   const hasName = !!dealData.product_name && dealData.product_name.trim().length >= 12;
   const hasUrl = !!dealData.product_url;
+  const imageUrl = String(dealData.image_url || '').trim();
+  const hasImage = imageUrl.startsWith('http') && !/placeholder|logo|icon|sprite|favicon/i.test(imageUrl);
 
-  if (!hasName || !hasUrl || salePrice <= 0) return false;
+  if (!hasName || !hasUrl || salePrice <= 0 || !hasImage) return false;
   if (hasCreditCardLikeContent(dealData.product_name)) return false;
   if (!isSingleProductDeal(dealData.product_name)) return false;
   if (!categoryLooksValid(dealData.category, dealData.product_name)) return false;
@@ -414,7 +416,7 @@ export async function enforceActiveDealPolicy(limit = 20000) {
   while (rows.length < limit) {
     const { data, error } = await supabase
       .from('deals')
-      .select('id,product_name,category,sale_price,discount_percent,product_url,active')
+      .select('id,product_name,category,sale_price,discount_percent,product_url,image_url,active')
       .eq('active', true)
       .gt('id', lastId)
       .order('id', { ascending: true })
@@ -441,7 +443,8 @@ export async function enforceActiveDealPolicy(limit = 20000) {
       category: row.category,
       sale_price: row.sale_price,
       discount_percent: row.discount_percent,
-      product_url: row.product_url
+      product_url: row.product_url,
+      image_url: row.image_url
     };
 
     if (!passesQualityGate(dealLike)) {
