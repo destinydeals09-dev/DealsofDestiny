@@ -23,4 +23,6 @@ export interface Deal {
   active: boolean;
   created_at: string;
   updated_at: string;
+  is_verified?: boolean;
+  source_confidence?: number | null;
 }

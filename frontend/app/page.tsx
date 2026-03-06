@@ -222,6 +222,9 @@ export default function Home() {
         const data = await fetchAllHotDeals(5000);
 
         const baseSafeDeals = data.filter(deal => {
+          const isVerified = deal.is_verified === true;
+          if (!isVerified) return false;
+
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
             deal.product_name?.toLowerCase().includes('expired') ||
             (deal.expires_at && new Date(deal.expires_at) < new Date());
