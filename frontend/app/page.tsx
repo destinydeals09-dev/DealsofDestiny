@@ -222,7 +222,8 @@ export default function Home() {
         const data = await fetchAllHotDeals(5000);
 
         const baseSafeDeals = data.filter(deal => {
-          const isVerified = deal.is_verified === true;
+          // hot_deals view may not expose is_verified; treat undefined as pass-through.
+          const isVerified = deal.is_verified !== false;
           if (!isVerified) return false;
 
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
