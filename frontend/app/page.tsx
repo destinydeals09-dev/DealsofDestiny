@@ -228,6 +228,10 @@ export default function Home() {
           const isVerified = deal.is_verified === true;
           if (!isVerified) return false;
 
+          // Temporary guardrail: suppress generic slickdeals rows until
+          // retailer-specific verification is stabilized.
+          if ((deal.source || '').toLowerCase() === 'slickdeals') return false;
+
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
             deal.product_name?.toLowerCase().includes('expired') ||
             (deal.expires_at && new Date(deal.expires_at) < new Date());
