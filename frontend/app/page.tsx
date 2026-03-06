@@ -202,8 +202,10 @@ export default function Home() {
       while (all.length < maxRows) {
         const to = from + pageSize - 1;
         const { data, error } = await supabase
-          .from('hot_deals')
+          .from('deals')
           .select('*')
+          .eq('active', true)
+          .order('id', { ascending: true })
           .range(from, to);
 
         if (error) throw error;
@@ -222,8 +224,8 @@ export default function Home() {
         const data = await fetchAllHotDeals(5000);
 
         const baseSafeDeals = data.filter(deal => {
-          // hot_deals view may not expose is_verified; treat undefined as pass-through.
-          const isVerified = deal.is_verified !== false;
+          // Strict accuracy mode: only show merchant-verified prices.
+          const isVerified = deal.is_verified === true;
           if (!isVerified) return false;
 
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
