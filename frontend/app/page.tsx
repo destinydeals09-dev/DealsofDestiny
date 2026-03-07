@@ -223,14 +223,14 @@ export default function Home() {
       try {
         const data = await fetchAllHotDeals(5000);
 
-        const baseSafeDeals = data.filter(deal => {
-          // Strict accuracy mode: only show merchant-verified prices.
-          const isVerified = deal.is_verified === true;
-          if (!isVerified) return false;
+        const verifiedCount = data.filter(deal => deal.is_verified === true).length;
+        const hasVerifiedInventory = verifiedCount >= 20;
 
-          // Temporary guardrail: suppress generic slickdeals rows until
-          // retailer-specific verification is stabilized.
-          if ((deal.source || '').toLowerCase() === 'slickdeals') return false;
+        const baseSafeDeals = data.filter(deal => {
+          // Prefer strict accuracy mode when verified inventory exists,
+          // but gracefully fall back so the feed never goes empty.
+          const isVerified = deal.is_verified === true;
+          if (hasVerifiedInventory && !isVerified) return false;
 
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
             deal.product_name?.toLowerCase().includes('expired') ||
