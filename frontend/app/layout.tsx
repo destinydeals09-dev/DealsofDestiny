@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ADSENSE_CLIENT, ADSENSE_ENABLED } from "@/lib/ads";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,7 +19,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {ADSENSE_ENABLED ? (
+          <Script
+            id="adsense-script"
+            async
+            strategy="afterInteractive"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+            crossOrigin="anonymous"
+          />
+        ) : null}
+        {children}
+      </body>
     </html>
   );
 }

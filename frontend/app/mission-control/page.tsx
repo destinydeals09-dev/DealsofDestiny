@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { ADSENSE_ENABLED, getAdSlotForPlacement } from '@/lib/ads';
 
 type ScraperLog = {
   id: number;
@@ -132,11 +133,16 @@ export default function MissionControlPage() {
           <div className="border border-red-500/40 bg-red-900/20 p-4 rounded text-red-300">{error}</div>
         ) : (
           <>
-            <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <section className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <Card title="Active Deals" value={summary.total.toString()} hint="Current active inventory" />
               <Card title="Verified Prices" value={summary.verified.toString()} hint="is_verified = true" />
               <Card title="Unverified Prices" value={summary.unverified.toString()} hint="Needs verification pipeline" />
               <Card title="Bad URL Heuristic" value={summary.badUrls.toString()} hint="Missing/aggregator/non-http URLs" />
+              <Card
+                title="Ads Pipeline"
+                value={ADSENSE_ENABLED && getAdSlotForPlacement('infeed-4') && getAdSlotForPlacement('infeed-8') ? 'READY' : 'SETUP NEEDED'}
+                hint="AdSense client + both in-feed slots"
+              />
             </section>
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
