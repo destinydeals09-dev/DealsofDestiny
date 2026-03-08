@@ -196,27 +196,48 @@ export default function Home() {
   useEffect(() => {
     async function fetchAllHotDeals(maxRows = 5000) {
       const pageSize = 1000;
-      let from = 0;
-      const all: Deal[] = [];
 
-      while (all.length < maxRows) {
-        const to = from + pageSize - 1;
-        const { data, error } = await supabase
-          .from('deals')
-          .select('*')
-          .eq('active', true)
-          .order('id', { ascending: true })
-          .range(from, to);
+      const fetchFromTable = async (table: 'deals' | 'deep_discount_deals') => {
+        let from = 0;
+        const all: Deal[] = [];
 
-        if (error) throw error;
-        if (!data || data.length === 0) break;
+        while (all.length < maxRows) {
+          const to = from + pageSize - 1;
+          const query = supabase
+            .from(table)
+            .select('*')
+            .order('id', { ascending: true })
+            .range(from, to);
 
-        all.push(...data as Deal[]);
-        if (data.length < pageSize) break;
-        from += pageSize;
+          // New table uses `active`; legacy table may not.
+          const { data, error } = table === 'deals'
+            ? await query.eq('active', true)
+            : await query;
+
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+
+          all.push(...data as Deal[]);
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+
+        return all;
+      };
+
+      try {
+        const primary = await fetchFromTable('deals');
+        if (primary.length > 0) return primary;
+      } catch (err) {
+        console.warn('Primary deals table unavailable, trying legacy table:', err);
       }
 
-      return all;
+      try {
+        return await fetchFromTable('deep_discount_deals');
+      } catch (err) {
+        console.error('Both deals tables failed:', err);
+        throw err;
+      }
     }
 
     async function fetchDeals() {
