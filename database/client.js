@@ -213,6 +213,8 @@ export async function upsertDeal(deal) {
   const merchant = inferMerchant(canonicalUrl || deal.product_url, deal.source);
 
   // Map v2.0 format to v1.0+ schema
+  const isVerified = deal.is_verified === true;
+
   const dealData = {
     product_name: deal.product_name,
     description: deal.description || null,
@@ -225,11 +227,13 @@ export async function upsertDeal(deal) {
     source: deal.source,
     source_url: deal.source_url || null,
     scraped_at: new Date().toISOString(),
-    active: deal.active !== undefined ? deal.active : (deal.is_active !== undefined ? deal.is_active : true),
+    // Backend credibility guardrail: unverified rows can exist for pipeline/debug,
+    // but are never allowed to be active for customer-facing feed.
+    active: isVerified && (deal.active !== undefined ? deal.active : (deal.is_active !== undefined ? deal.is_active : true)),
     merchant,
     network: deal.network || 'direct',
     source_confidence: deal.source_confidence ?? 70,
-    is_verified: deal.is_verified ?? false
+    is_verified: isVerified
   };
 
   dealData.quality_score = deal.quality_score ?? computeQualityScore(dealData);
@@ -416,7 +420,7 @@ export async function enforceActiveDealPolicy(limit = 20000) {
   while (rows.length < limit) {
     const { data, error } = await supabase
       .from('deals')
-      .select('id,product_name,category,sale_price,discount_percent,product_url,image_url,active')
+      .select('id,product_name,category,sale_price,discount_percent,product_url,image_url,active,is_verified')
       .eq('active', true)
       .gt('id', lastId)
       .order('id', { ascending: true })
@@ -447,7 +451,7 @@ export async function enforceActiveDealPolicy(limit = 20000) {
       image_url: row.image_url
     };
 
-    if (!passesQualityGate(dealLike)) {
+    if (row.is_verified !== true || !passesQualityGate(dealLike)) {
       toDeactivate.push(row.id);
     }
   }
