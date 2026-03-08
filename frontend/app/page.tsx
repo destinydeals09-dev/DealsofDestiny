@@ -244,14 +244,10 @@ export default function Home() {
       try {
         const data = await fetchAllHotDeals(5000);
 
-        const verifiedCount = data.filter(deal => deal.is_verified === true).length;
-        const hasVerifiedInventory = verifiedCount >= 20;
-
         const baseSafeDeals = data.filter(deal => {
-          // Prefer strict accuracy mode when verified inventory exists,
-          // but gracefully fall back so the feed never goes empty.
+          // Accuracy-first policy: never show unverified prices.
           const isVerified = deal.is_verified === true;
-          if (hasVerifiedInventory && !isVerified) return false;
+          if (!isVerified) return false;
 
           const isExpired = deal.category?.toLowerCase().includes('expired') ||
             deal.product_name?.toLowerCase().includes('expired') ||
