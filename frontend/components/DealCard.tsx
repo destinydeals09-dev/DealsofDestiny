@@ -51,6 +51,17 @@ const getCategoryIcon = (deal: Deal) => {
   return '🔥';
 };
 
+const getDisplayTitle = (name: string) => {
+  // Remove embedded scraped price strings so card title never conflicts
+  // with verified price fields rendered below.
+  const withoutPrice = name
+    .replace(/\s+\$\d+(?:\.\d{1,2})?(?:\s*(?:\+|and)\s*.*)?$/i, '')
+    .replace(/\s+\d+%\s*off.*$/i, '')
+    .trim();
+
+  return withoutPrice || name;
+};
+
 export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0, onCardTouch }: DealCardProps) {
   const [imageError, setImageError] = React.useState(false);
   const cardId = String(deal.id);
@@ -74,6 +85,8 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
     [deal.product_url, deal.source]
   );
 
+  const displayTitle = React.useMemo(() => getDisplayTitle(deal.product_name), [deal.product_name]);
+
   return (
     <a
       href={deal.product_url}
@@ -89,7 +102,7 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
 
       <div className="relative h-48 bg-white border-b border-[#252529] flex items-center justify-center overflow-hidden">
         {deal.image_url && !imageError ? (
-          <Image src={deal.image_url} alt={deal.product_name} fill className="object-contain p-2 bg-white group-hover:scale-105 transition-transform duration-300" unoptimized onError={() => setImageError(true)} />
+          <Image src={deal.image_url} alt={displayTitle} fill className="object-contain p-2 bg-white group-hover:scale-105 transition-transform duration-300" unoptimized onError={() => setImageError(true)} />
         ) : (
           <div className="text-8xl opacity-20 transition-all">{getCategoryIcon(deal)}</div>
         )}
@@ -109,7 +122,7 @@ export default function DealCard({ deal, rank, activeTouchCardId, touchPulse = 0
       </div>
 
       <div className="p-4 flex flex-col h-[calc(100%-12rem)] relative z-20">
-        <h3 className="text-foreground font-bold text-sm leading-tight line-clamp-2 mb-2 font-mono group-hover:text-terminal-green transition-colors">{deal.product_name}</h3>
+        <h3 className="text-foreground font-bold text-sm leading-tight line-clamp-2 mb-2 font-mono group-hover:text-terminal-green transition-colors">{displayTitle}</h3>
         <div className="mt-auto">
           <div className="flex items-end justify-between border-t border-[#252529] pt-2 mt-1">
             <div className="flex flex-col">
